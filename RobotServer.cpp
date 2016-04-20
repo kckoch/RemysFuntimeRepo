@@ -18,7 +18,7 @@
 void DieWithError(char *errorMessage);  /* Error handling function */
 void handleClient();
 void convertCommand(char* recvRobotCommand, char** sendRobotCommand, char** sendRobotIP); 
-void closeServer();
+void closeServer(int param);
 
 // ~~~ Command-line Parameters
 unsigned short localPort; // local port
@@ -275,7 +275,7 @@ void DieWithError(char* errorMessage) {
 }
 
 // ~~~ closeServer(): Shutdown the server upon receiving a control signal
-void closeServer() {
+void closeServer(int param) {
    // Print the count of guesses and correct answers
    fprintf(stderr, "Closing server.\n");
 

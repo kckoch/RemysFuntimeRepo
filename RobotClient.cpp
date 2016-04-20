@@ -241,7 +241,7 @@ void runCommands(unsigned int polygonSides, unsigned int numCommands) {
                 }
 
                 // ~~~ Determine whether or not we have received all of the segments
-                _Bool doBreak = 1;
+                bool doBreak = 1;
                 for(j = 0; j < toRecv; j++) if(messageSegments[j] == NULL) doBreak = 0;
                 if(doBreak) break;
                 
