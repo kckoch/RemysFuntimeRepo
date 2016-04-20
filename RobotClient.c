@@ -12,7 +12,7 @@
 #include "Robot.h"
 
 #define TIMEOUT 5.0
-#define MESSAGESIZE 1500
+#define MESSAGESIZE 1000
 
 // ~~~ Function Prototypes
 void DieWithError(char *errorMessage);

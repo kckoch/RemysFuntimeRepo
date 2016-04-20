@@ -12,7 +12,7 @@
 
 #include "Robot.h"
 
-#define MESSAGESIZE 1500   /* Size of receive buffer */
+#define MESSAGESIZE 1000   /* Size of receive buffer */
 
 // ~~~ Function Prototypes
 void DieWithError(char *errorMessage);  /* Error handling function */
