@@ -12,7 +12,7 @@
 
 #include "Robot.h"
 
-#define MESSAGESIZE 1500   /* Size of receive buffer */
+#define MESSAGESIZE 1000   /* Size of receive buffer */
 
 // ~~~ Function Prototypes
 void DieWithError(char *errorMessage);  /* Error handling function */
@@ -114,21 +114,20 @@ int main(int argc, char *argv[]) {
 		// ~~~ Send each individual segment to the client over UDP
         int i;
         for(i = 0; i < segments; i++) {
-            char* toSend = (char*)calloc(1,MESSAGESIZE);
+            char* toSend = (char*)malloc(MESSAGESIZE);
             parser = toSend;
-
 			
 			// ~~~ Insert the header data into the message
             *(unsigned int*)parser = htonl(recvcommID); parser += 4; // Insert the commID
             *(unsigned int*)parser = htonl(segments);   parser += 4; // Insert the number of segments
             *(unsigned int*)parser = htonl(i);          parser += 4; // Insert the index
-		    
-            // ~~~ Send the appropriate size for the segment   
+
+		    // ~~~ Send the appropriate size for the segment   
             if(i == segments - 1) {
                 memcpy(parser, bodyPtr, remainder); // Pack the robot's response into the message
                 sendto(sockToClient, toSend, remainder + 12, 0, (struct sockaddr *) &robotClntAddr, sizeof(robotClntAddr));
             }
-            else {   
+            else {    
                 memcpy(parser, bodyPtr, MESSAGESIZE - 12); // Pack the robot's response into the message
                 sendto(sockToClient, toSend, MESSAGESIZE, 0, (struct sockaddr *) &robotClntAddr, sizeof(robotClntAddr));
             }
@@ -222,7 +221,7 @@ void convertCommand(char* recvRobotCommand, char** sendRobotCommand, char** send
 	// For GET IMAGE...
     if(strstr(recvRobotCommand, "GET IMAGE")) {
 //        sprintf(*sendRobotCommand, "%s%hu%s", "/snapshot?topic=/robot_", imageID, "/image?width=600?height=500");
-        sprintf(*sendRobotCommand, "%s%hu%s", "/snapshot?topic=/robot_", imageID, "/image&width=600&height=500");
+        sprintf(*sendRobotCommand, "%s%hu%s", "/snapshot?topic=/robot_", imageID, "/image7width=600&height=500");
         sprintf(*sendRobotIP, "%s%s", robotIP, ":8081");
 		  robotServPort = 8081;
     }
