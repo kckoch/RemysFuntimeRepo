@@ -11,6 +11,7 @@
 */
 
 #include "Robot.h"
+#include <string>
 
 #define MESSAGESIZE 1000   /* Size of receive buffer */
 
@@ -48,6 +49,12 @@ int recvMsgSize;                   // Size of received message
 char UDPRecvBody[MESSAGESIZE];
 char TCPRecvBody[1000000];
 unsigned int returnMessageSize;
+
+using namespace std;
+
+// C implementations - count = length of *message
+char *encodeMessage(const char *message, int count, int *messageSize);
+char *decodeMessage(const char *message, int count, int *messageSize);
 
 int main(int argc, char *argv[]) {
     // ~~~ Redirect control interruptions
@@ -93,8 +100,21 @@ int main(int argc, char *argv[]) {
         if ((recvMsgSize = recvfrom(sockToClient, UDPRecvBody, MESSAGESIZE, 0, (struct sockaddr *) &robotClntAddr, &cliAddrLen)) < 0)
             DieWithError("\nrecvfrom() failed\n");
 
-		// ~~~ Check that the received message is of an appropriate size
-        if(recvMsgSize > MESSAGESIZE) DieWithError("\nReceived a message from a client that was too large.\n");
+       char *decoded = decodeMessage(UDPRecvBody, recvMsgSize, &recvMsgSize);
+
+       for(int i = 0; i < recvMsgSize; i++)
+       {
+      	 UDPRecvBody[i] = decoded[i];
+       }
+       for(int i = recvMsgSize; i < 1000; i++)
+       {
+      	 UDPRecvBody[i] =  '\0';
+       }
+
+
+ 		// ~~~ Check that the received message is of an appropriate size
+         if(recvMsgSize > MESSAGESIZE) DieWithError("\nReceived a message from a client that was too large.\n");
+
 
 		// ~~~ Indicate what client we are handling
         printf("Handling client %s\n", inet_ntoa(robotClntAddr.sin_addr));
@@ -106,6 +126,10 @@ int main(int argc, char *argv[]) {
 		// ~~~ Parse through the header data and get to the actual message body
         char* bodyPtr = strstr(TCPRecvBody, "\r\n\r\n") + 4;
         returnMessageSize -= (intptr_t)bodyPtr - (intptr_t)TCPRecvBody;
+
+        int encodedSize;
+        char *encoded = encodeMessage(bodyPtr, returnMessageSize, &encodedSize);
+        returnMessageSize = encodedSize;
 
 		// ~~~ Determine how many segments to send
         unsigned int segments = ceil(returnMessageSize * 1.0 / (MESSAGESIZE - 12));
