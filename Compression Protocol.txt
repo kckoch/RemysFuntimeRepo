@@ -1,0 +1,52 @@
+Compression algorithm to reduce file size of simple JPEG images by ~22-43%, increasing theoratical goodput by ~25-75%
+
+TO ENCODE A MESSAGE:
+
+A message sent using this library takes the following format:
+* [Dictionary][Encoded message to be sent]
+
+The dictionary takes the following format:
+
+[ASCII value of length of entry][Entry][ASCII value of length of entry][Entry][ASCII value of length of entry][Entry]...[\0]
+
+
+Say you want to send a string variable called "SEND"
+
+Divide the string into substrings of length 4 (truncate last substring if string length mod 4 is not 0)
+Keep track of how many times each substring appears
+Discard substrings that appear less than 6 times
+
+* Create dictionary to put at start of message
+For each substring that remains,
+	Append to SEND: [single ASCII character with value of length of entry (at this point, always 0x04)]
+	Append to SEND: [entry]
+Dictionary ends with the null character, so append to SEND: '\0'
+
+(This method uses an escape character to signify encoding and decoding commands. Right now, the escape character is 0xFE, but it might change in the future.)
+
+Start reading message you want to send.
+	When a non-escape character appears, it will be copied directly (unless it's part of a substring which appears in the dictionary)
+	Any time the escape character appears in the message you want to send, it will be entered twice.
+	Any time a substring appears that exists in the dictionary, replace it with the following:
+		[escape character]
+		[ASCII character which represents the index of the dictionary entry. For example, the first entry in the dictionary has an index of 0]
+		[ASCII character which represents the number of times the sequence repeats, up to [ESCAPECHARACTER - 1] times
+
+EXAMPLE:
+
+Message to send:
+
+Hellooo 123412341234123412341234123412341234 <> ABCDABCDABCDABCDABCDABCDABCD********1234,[ESCAPECHAR]world!
+
+Dictionary created:
+0 - 1234
+1 - ABCD
+
+(The substring "****" does not appear in the dictionary because it appears less than 6 times)
+
+Final message to send:
+[4]1234[4]ABCD[0]Hellooo [ESCAPECHAR][0][9] <> [ESCAPECHAR][1][7]********[ESCAPECHAR][0][1],[ESCAPECHAR][ESCAPECHAR]world!
+
+
+NOTES:
+Be careful using C++ strings. They don't like the null character, which is a valid character in data transfer.
