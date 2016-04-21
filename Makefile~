@@ -1,4 +1,4 @@
-BINS=robotClient robotServer Compression
+BINS=robotClient robotServer
 
 all: $(BINS)
 
@@ -7,9 +7,6 @@ robotClient: RobotClient.c
 
 robotServer: RobotServer.c
 	g++ -g -Wall RobotServer.c -o robotServer -lm
-	
-Compression: Compression.cpp
-	g++ -g -Wall Compression.cpp -o Compression -lm
 
 clean:
 	rm $(BINS)

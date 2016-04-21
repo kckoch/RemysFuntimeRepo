@@ -341,9 +341,9 @@ void runCommands(unsigned int polygonSides, unsigned int numCommands) {
     fp = fopen(filename, "r");
     fseek(fp, 0L, SEEK_END);
 	int sz = ftell(fp);
+	char *temp = NULL;
 	fseek(fp, 0L, SEEK_SET);
 	
-	char *temp = NULL;
 	fgets(temp, sz, (FILE *)fp);
 	fclose(fp);
 	int retSize;

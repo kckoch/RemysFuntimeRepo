@@ -252,7 +252,7 @@ void trimDictionary(map<string, int> &dictionary)
 //	DEBUG("FINAL dictionary size = " << dictionary.size() << endl);
 }
 
-/*
+
 int main()
 {
 	string messageReceived = EXAMPLESTRING;
@@ -339,7 +339,7 @@ int main()
 
 	return 0;
 }
-*/
+
 
 
 map<string, int> createDictionary(string input)

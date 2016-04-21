@@ -18,7 +18,7 @@
 void DieWithError(char *errorMessage);  /* Error handling function */
 void handleClient();
 void convertCommand(char* recvRobotCommand, char** sendRobotCommand, char** sendRobotIP); 
-void closeServer(int in);
+void closeServer();
 
 // ~~~ Command-line Parameters
 unsigned short localPort; // local port
