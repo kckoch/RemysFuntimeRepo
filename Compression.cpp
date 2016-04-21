@@ -63,17 +63,11 @@ Be careful using C++ strings. They don't like the null character, which is a val
 #include <utility>
 #include <set>
 
+#include "Compression.h"
+
 using namespace std;
 
 #define DEBUG(X) cout << "{" << __LINE__ << "} | " << X; cout.flush()
-
-#if defined(MSDOS) || defined(OS2) || defined(WIN32) || defined(__CYGWIN__)
-#  include <fcntl.h>
-#  include <io.h>
-#  define SET_BINARY_MODE(file) setmode(fileno(file), O_BINARY)
-#else
-#  define SET_BINARY_MODE(file)
-#endif
 
 const string EXAMPLESTRING =
 				"  COMPRESSION BEGINS )}>"
@@ -83,13 +77,34 @@ const string EXAMPLESTRING =
 				"<{( COMPRESSION ENDS";
 
 const char ESCAPECHAR = 254;
+
 map<string, int> createDictionary(string input);
+
 string encodeMessage(const string &message, map<string, int> dictionary);
 string decodeMessage(string message);
 
-// C implementations - count = length of *message
-char *encodeMessage(const char *message, int count, int *messageSize);
-char *decodeMessage(const char *message, int count, int *messageSize);
+// Read contents of file into string (include null bytes)
+string stringFromFile(string fileName);
+
+// Adds "count" characters from *add (character pointer) to &target, including null bytes
+void addToString(string &target, void *add, int count);
+
+// Adds the contents of &add into target, including null bytes
+void addToString(string &target, const string &add);
+
+// Add "length" bytes from "add" at position "position" to "target"
+void addSubstringToString(string &target, const string &add, int position, int length);
+
+// Filters out all but top ESCAPECHAR entries from dictionary
+void trimDictionary(map<string, int> &dictionary);
+
+
+// Debug functions
+string debugString(string s);
+void printString(string s);
+void elaborateString(string s);
+
+
 
 string debugString(string s)
 {
@@ -180,7 +195,7 @@ void addToString(string &target, void *add, int count)
 
 // Adds the contents of &add into target, including null bytes
 void addToString(string &target, const string &add)
-{ //rofl
+{
 //	DEBUG("@@@target.length() = " << target.length() << endl);
 	addToString(target, (void *) add.c_str(), add.length());
 
