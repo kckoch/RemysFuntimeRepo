@@ -100,16 +100,17 @@ int main(int argc, char *argv[]) {
         if ((recvMsgSize = recvfrom(sockToClient, UDPRecvBody, MESSAGESIZE, 0, (struct sockaddr *) &robotClntAddr, &cliAddrLen)) < 0)
             DieWithError("\nrecvfrom() failed\n");
 
-       char *decoded = decodeMessage(UDPRecvBody, recvMsgSize, &recvMsgSize);
-
-       for(int i = 0; i < recvMsgSize; i++)
-       {
-      	 UDPRecvBody[i] = decoded[i];
-       }
-       for(int i = recvMsgSize; i < 1000; i++)
-       {
-      	 UDPRecvBody[i] =  '\0';
-       }
+       // Image will not be compressed coming from client
+//       char *decoded = decodeMessage(UDPRecvBody, recvMsgSize, &recvMsgSize);
+//
+//       for(int i = 0; i < recvMsgSize; i++)
+//       {
+//      	 UDPRecvBody[i] = decoded[i];
+//       }
+//       for(int i = recvMsgSize; i < 1000; i++)
+//       {
+//      	 UDPRecvBody[i] =  '\0';
+//       }
 
 
  		// ~~~ Check that the received message is of an appropriate size

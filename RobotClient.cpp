@@ -182,17 +182,17 @@ void runCommands(unsigned int polygonSides, unsigned int numCommands) {
         strcpy((char*)parser, robotID); parser += strlen(robotID) + 1; // 2) Insert the robot ID
         strcpy((char*)parser, commands[n]);                            // 3) Insert the command
         
-        //----Encode the message and send
-        int new_size;
-        char *encoded = encodeMessage((const char *)messageBody, messageSize, &new_size);
-        
-        if (sendto(sock, encoded, new_size, 0, (struct sockaddr *) &robotServAddr, sizeof(robotServAddr)) != new_size)
-            DieWithError("\nsendto() sent a different number of bytes than expected\n");
-        free(encoded);
+        //----Sent message will not be encoded
+//        int new_size;
+//        char *encoded = encodeMessage((const char *)messageBody, messageSize, &new_size);
+//
+//        if (sendto(sock, encoded, new_size, 0, (struct sockaddr *) &robotServAddr, sizeof(robotServAddr)) != new_size)
+//            DieWithError("\nsendto() sent a different number of bytes than expected\n");
+//        free(encoded);
 
         // ~~~ The message to the middleware
-        //if (sendto(sock, messageBody, messageSize, 0, (struct sockaddr *) &robotServAddr, sizeof(robotServAddr)) != messageSize)
-        //    DieWithError("\nsendto() sent a different number of bytes than expected\n");
+        if (sendto(sock, messageBody, messageSize, 0, (struct sockaddr *) &robotServAddr, sizeof(robotServAddr)) != messageSize)
+            DieWithError("\nsendto() sent a different number of bytes than expected\n");
 
         free(messageBody); // Free the memory of the message, now that it is not longer in use
 
