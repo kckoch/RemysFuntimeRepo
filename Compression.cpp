@@ -45,7 +45,7 @@ Dictionary created:
 0 - 1234
 1 - ABCD
 
-(**** does not appear in the dictionary because it appears less than 6 times)
+(The substring "****" does not appear in the dictionary because it appears less than 6 times)
 
 Final message to send:
 [4]1234[4]ABCD[0]Hellooo [ESCAPECHAR][0][9] <> [ESCAPECHAR][1][7]********[ESCAPECHAR][0][1],[ESCAPECHAR][ESCAPECHAR]world!
@@ -62,9 +62,20 @@ Be careful using C++ strings. They don't like the null character, which is a val
 #include <cstdlib>
 #include <utility>
 #include <set>
+
+#include "zlib.h"
+
 using namespace std;
 
 #define DEBUG(X) cout << "{" << __LINE__ << "} | " << X; cout.flush()
+
+#if defined(MSDOS) || defined(OS2) || defined(WIN32) || defined(__CYGWIN__)
+#  include <fcntl.h>
+#  include <io.h>
+#  define SET_BINARY_MODE(file) setmode(fileno(file), O_BINARY)
+#else
+#  define SET_BINARY_MODE(file)
+#endif
 
 const string EXAMPLESTRING =
 				"  COMPRESSION BEGINS )}>"
@@ -74,10 +85,13 @@ const string EXAMPLESTRING =
 				"<{( COMPRESSION ENDS";
 
 const char ESCAPECHAR = 254;
-
 map<string, int> createDictionary(string input);
 string encodeMessage(string message, map<string, int> dictionary);
 string decodeMessage(string message);
+
+// C implementations - count = length of *message
+char *encodeMessage(const char *message, int count, int *messageSize);
+char *decodeMessage(const char *message, int count, int *messageSize);
 
 string debugString(string s)
 {
@@ -184,6 +198,7 @@ void addSubstringToString(string &target, const string &add, int position, int l
 // Filters out all but top ESCAPECHAR entries from dictionary
 void trimDictionary(map<string, int> &dictionary)
 {
+
 	// Handle case dictionary does not need trimming - ie, size of dictionary < ESCAPECHAR
 	if(dictionary.size() < (unsigned int) (unsigned char) ESCAPECHAR)
 	{
@@ -211,7 +226,7 @@ void trimDictionary(map<string, int> &dictionary)
 		it2++;
 	}
 
-	for(int i = 0; i < (int) (unsigned char) ESCAPECHAR; i++)
+	for(int i = 0; i < ((int) (unsigned char) ESCAPECHAR) && (it != filter.rend()); i++)
 	{
 //		DEBUG(i << endl);
 //		DEBUG(it->first << " | " << debugString(it->second) << endl);
@@ -229,18 +244,43 @@ int main()
 	// Alternately, read in file to read
 	messageReceived = stringFromFile("snapshot.jpg");
 
-	// Create dictionary
-	map<string, int> dictionary = createDictionary(messageReceived);
+
 
 	// Encode message
-	string send = encodeMessage(messageReceived, dictionary);
+//	string send = encodeMessage(messageReceived, dictionary);
+	// Test C
+	int receivedSize;
+	char *sendChar = encodeMessage(messageReceived.c_str(), messageReceived.size(), &receivedSize);
+	string send = "";
+
+
+	for(int i = 0; i < receivedSize; i++)
+	{
+		send += sendChar[i];
+	}
+
+//	send.resize(receivedSize);
+////	send.insert(0, receivedSize, 'Z');
+//	for(int i = 0; i < receivedSize; i++)
+//	{
+//		send[i] = sendChar[i];
+//	}
 
 	// Decode message
-	string decoded = decodeMessage(send);
+//	string decoded = decodeMessage(send);
+	// Test C
+	int decodedSize;
+	char *decodedChar = decodeMessage(send.c_str(), send.size(), &decodedSize);
+	string decoded; decoded.resize(decodedSize);
+	for(int i = 0; i < decodedSize; i++)
+	{
+		decoded[i] = decodedChar[i];
+	}
 
 	DEBUG(messageReceived.length() << " | " << decoded.length() << " | Sizes\n");
 	DEBUG("Received message == decoded message??? : " << (decoded == messageReceived ? "TRUE!!!" : "false...") << endl);
 
+	// Will never happen in final version of code
 	if(decoded != messageReceived)
 	{
 		cout << "\n\n\nFATAL ERROR!!!!! decoded != messageReceived!!!!\n\n\n";
@@ -294,6 +334,8 @@ map<string, int> createDictionary(string input)
 		dictionary[input.substr(i-4, 4)] += 1;
 	}
 
+	DEBUG("Dictionary.sizE() = " << dictionary.size() << endl);
+
 	// Find tokens worth trimming, ie, tokens that appear more than 5 times
 	// (Any less than 5 times, and it would be more expensive to keep them in
 	for(map<string, int>::iterator i = dictionary.begin(); i != dictionary.end();)
@@ -309,6 +351,9 @@ map<string, int> createDictionary(string input)
 		}
 	}
 
+	DEBUG("Dictionary.sizE() = " << dictionary.size() << endl);
+
+
 //	for(map<string, int>::iterator i = dictionary.begin(); i != dictionary.end(); i++)
 //	{
 //		DEBUG("- " << debugString(i->first) << " | " << i->second << endl);
@@ -316,6 +361,7 @@ map<string, int> createDictionary(string input)
 
 	// Trim all but first [ESCAPECHAR] entries
 	trimDictionary(dictionary);
+
 
 	return dictionary;
 }
@@ -502,7 +548,6 @@ string decodeMessage(string message)
 //			DEBUG(pos << " | Nothing of interest\n");
 			ret += message[pos++];
 		}
-
 		else
 		{
 			// If two ESCAPECHAR's appear, the decoding is a single ESCAPECHAR
@@ -529,6 +574,74 @@ string decodeMessage(string message)
 			}
 		}
 
+	}
+
+	return ret;
+}
+
+// C implementation - count = length of *message
+char *encodeMessage(const char *message, int count, int *messageSize)
+{
+	//	string messageString(message, count);
+	string messageString;
+	messageString.resize(count);
+	DEBUG("Resized to " << count << " | " << messageString.size() << endl);
+//	messageString.insert(0, count, 'Z');
+
+
+
+	for(int i = 0; i < count; i++)
+	{
+		messageString[i] = message[i];
+	}
+
+
+
+	map<string, int> dictionary = createDictionary(messageString);
+
+
+	DEBUG("Dictionary = " << dictionary.size() << endl);
+
+	DEBUG("EXITING\n");
+	exit(-1);
+
+
+	string retString = encodeMessage(messageString, dictionary);
+
+	*messageSize = retString.size();
+
+	char *ret = new char(retString.size());
+	for(int i = 0; i < retString.size(); i++)
+	{
+		ret[i] = retString[i];
+	}
+
+	delete(message);
+
+
+	return ret;
+}
+
+// C implementation - count = length of *message
+char *decodeMessage(const char *message, int count, int *messageSize)
+{
+	string messageString;
+	messageString.insert(0, count, 'Z');
+//	messageString.resize(count);
+
+	for(int i = 0; i < count; i++)
+	{
+		messageString[i] = message[i];
+	}
+
+	string retString = decodeMessage(messageString);
+
+	*messageSize = retString.size();
+
+	char *ret = new char(retString.size());
+	for(int i = 0; i < retString.size(); i++)
+	{
+		ret[i] = retString[i];
 	}
 
 	return ret;
