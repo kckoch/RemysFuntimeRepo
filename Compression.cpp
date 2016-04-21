@@ -86,7 +86,7 @@ const string EXAMPLESTRING =
 
 const char ESCAPECHAR = 254;
 map<string, int> createDictionary(string input);
-string encodeMessage(string message, map<string, int> dictionary);
+string encodeMessage(const string &message, map<string, int> dictionary);
 string decodeMessage(string message);
 
 // C implementations - count = length of *message
@@ -103,7 +103,15 @@ string debugString(string s)
 	for(int i = 0; i < s.length(); i++)
 	{
 		c = s[i];
-		if(c != '\0')
+		if(c == '\r')
+		{
+			ret += "{\\r}";
+		}
+		else if(c == '\n')
+		{
+			ret += "{\\n}";
+		}
+		else if(c != '\0')
 		{
 			ret += c;
 		}
@@ -148,6 +156,9 @@ string stringFromFile(string fileName)
 // Adds "count" characters from *add (character pointer) to &target, including null bytes
 void addToString(string &target, void *add, int count)
 {
+
+//	DEBUG("Target before = " << debugString(target) << endl);
+
 //	DEBUG("Add = " << (char *)add);
 //	DEBUG(endl << "Count = " << count << endl);
 //	DEBUG("TARGET.length() = " << target.length() << " | " << target << endl);
@@ -158,28 +169,34 @@ void addToString(string &target, void *add, int count)
 
 	char *addition = (char *) add;
 
+
+
 	for(start; start < target.length(); start++)
 	{
 //		DEBUG(start << " | " << target.length() << " | " << (int) (addition)[0] << " | " << (addition)[0] << endl);
 		target[start] = (addition++)[0];
 	}
+
+//	DEBUG("Target after  = " << debugString(target) << endl);
 }
 
 // Adds the contents of &add into target, including null bytes
 void addToString(string &target, const string &add)
-{
+{ //rofl
 //	DEBUG("@@@target.length() = " << target.length() << endl);
-	char *temp = new char(add.length() + 1);
+	addToString(target, (void *) add.c_str(), add.length());
 
-	for(int i = 0; i < add.length(); i++)
-	{
-		temp[i] = add[i];
-	}
-	temp[add.length()] = '\0';
-
-	addToString(target, (void *) temp, add.length());
-
-	delete(temp);
+//	char *temp = new char[add.length() + 1];
+//
+//	for(int i = 0; i < add.length(); i++)
+//	{
+//		temp[i] = add[i];
+//	}
+//	temp[add.length()] = '\0';
+//
+//	addToString(target, (void *) temp, add.length());
+//
+//	delete[] temp;
 }
 
 // Add "length" bytes from "add" at position "position" to "target"
@@ -242,8 +259,13 @@ int main()
 {
 	string messageReceived = EXAMPLESTRING;
 	// Alternately, read in file to read
-	messageReceived = stringFromFile("snapshot.jpg");
+	string read;
+	cout << "Enter file name to read :";
+	getline(cin, read);
+	messageReceived = stringFromFile(read);
 
+	cout << "READING FILE: " << read << endl;
+	cout << "TESTING: C implementation\n";
 
 
 	// Encode message
@@ -376,7 +398,7 @@ map<string, int> createDictionary(string input)
 // 	Any instance of ESCAPECHAR in the original message has been replaced with two instances of ESCAPECHAR
 // 	Any time a string from the dictionary appears, that string is replaced with:
 //			ESCAPECHAR + <Entry number in dictionary> + <number of times string repeats (max of (ESCAPECHAR - 1) times)>
-string encodeMessage(string message, map<string, int> dictionary)
+string encodeMessage(const string &message, map<string, int> dictionary)
 {
 	string ret;
 	// Unfortunate scenario where no compression can take place
@@ -390,6 +412,9 @@ string encodeMessage(string message, map<string, int> dictionary)
 		return ret;
 	}
 
+
+
+
 //	for(int i = 0; i < 10; i++)
 //	{
 //		DEBUG(i << " | " << message[i] << " | " << (int) (unsigned char) message[i] << endl);
@@ -398,8 +423,11 @@ string encodeMessage(string message, map<string, int> dictionary)
 	int position = 4;
 	ret.reserve(message.size());
 
+
 	// Keys is a map that maps the entry with a number. This number is used to decode the message later
 	map<string, int> keys;
+
+
 
 	int counter = 0;
 	for(map<string, int>::iterator i = dictionary.begin(); i != dictionary.end();)
@@ -425,12 +453,17 @@ string encodeMessage(string message, map<string, int> dictionary)
 //				ret += c;
 //			}
 //		}
+
+		DEBUG("Addint to string " << i->first << endl);
 		addToString(ret, i->first);
 //		ret += i->first;
 
 		keys[i->first] = counter++;
 		i++;
 	}
+
+
+
 
 	// Terminate dictionary with \0
 	ret += '\0';
@@ -579,70 +612,113 @@ string decodeMessage(string message)
 	return ret;
 }
 
-// C implementation - count = length of *message
+/* These two work - C Implementations */
 char *encodeMessage(const char *message, int count, int *messageSize)
 {
-	//	string messageString(message, count);
 	string messageString;
 	messageString.resize(count);
-	DEBUG("Resized to " << count << " | " << messageString.size() << endl);
-//	messageString.insert(0, count, 'Z');
-
-
 
 	for(int i = 0; i < count; i++)
 	{
 		messageString[i] = message[i];
 	}
-
-
 
 	map<string, int> dictionary = createDictionary(messageString);
 
+	string returnString = encodeMessage(messageString, dictionary);
 
-	DEBUG("Dictionary = " << dictionary.size() << endl);
+	*messageSize = returnString.size();
+	char *ret = new char[returnString.size()];
 
-	DEBUG("EXITING\n");
-	exit(-1);
-
-
-	string retString = encodeMessage(messageString, dictionary);
-
-	*messageSize = retString.size();
-
-	char *ret = new char(retString.size());
-	for(int i = 0; i < retString.size(); i++)
+	for(int i = 0; i < returnString.size(); i++)
 	{
-		ret[i] = retString[i];
+		ret[i] = returnString[i];
 	}
-
-	delete(message);
-
 
 	return ret;
 }
 
-// C implementation - count = length of *message
+
 char *decodeMessage(const char *message, int count, int *messageSize)
 {
 	string messageString;
-	messageString.insert(0, count, 'Z');
-//	messageString.resize(count);
+	messageString.resize(count);
 
 	for(int i = 0; i < count; i++)
 	{
 		messageString[i] = message[i];
 	}
 
-	string retString = decodeMessage(messageString);
+	string decodedMessage = decodeMessage(messageString);
 
-	*messageSize = retString.size();
+	*messageSize = decodedMessage.size();
 
-	char *ret = new char(retString.size());
-	for(int i = 0; i < retString.size(); i++)
+	char *ret = new char[decodedMessage.size()];
+
+	for(int i = 0; i < decodedMessage.size(); i++)
 	{
-		ret[i] = retString[i];
+		ret[i] = decodedMessage[i];
 	}
 
 	return ret;
 }
+
+
+/* THIS SHIT DOES NOT WORK EVNE THOUGH IT'S EXACTLY THE SAME AS THE ABOVE */
+//// C implementation - count = length of *message
+//char *encodeMessage(const char *message, int count, int *messageSize)
+//{
+//	//	string messageString(message, count);
+//	string messageString;
+//	messageString.resize(count);
+//	DEBUG("Resized to " << count << " | " << messageString.size() << endl);
+////	messageString.insert(0, count, 'Z');
+//
+//	for(int i = 0; i < count; i++)
+//	{
+//		messageString[i] = message[i];
+//	}
+//
+//	map<string, int> dictionary = createDictionary(messageString);
+//
+//	DEBUG("Dictionary = " << dictionary.size() << endl);
+//
+//	string retString = encodeMessage(messageString, dictionary);
+//
+//
+//	*messageSize = retString.size();
+//
+//	DEBUG("@@@@here\n");
+//	char *ret = new char(retString.size());
+//	for(int i = 0; i < retString.size(); i++)
+//	{
+//		ret[i] = retString[i];
+//	}
+//
+//	return ret;
+//}
+//
+//// C implementation - count = length of *message
+//char *decodeMessage(const char *message, int count, int *messageSize)
+//{
+//	string messageString;
+////	messageString.insert(0, count, 'Z');
+//	messageString.resize(count);
+//
+//	for(int i = 0; i < count; i++)
+//	{
+//		messageString[i] = message[i];
+//	}
+//
+//	string retString = decodeMessage(messageString);
+//
+//	*messageSize = retString.size();
+//
+//	char *ret = new char[retString.size()];
+//	for(int i = 0; i < retString.size(); i++)
+//	{
+//		ret[i] = retString[i];
+//	}
+//
+//	return ret;
+//}
