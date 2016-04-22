@@ -341,11 +341,16 @@ void runCommands(unsigned int polygonSides, unsigned int numCommands) {
     // Overwrite file with contents of decoded message
     off_t file_size;
     char *temp;
-  	struct stat st;
+    struct stat st;
 
   // stat() returns -1 on error. Skipping check in this example
   	stat(filename, &st);
     file_size = st.st_size;
+    fp = fopen(filename, "r");
+    for(int x = 0; x < file_size; x++) {
+    	temp[x] = fgetc(fp);
+    }
+    fclose(fp);
     
     int retSize;
     char *resp = decodeMessage(temp, file_size, &retSize);
