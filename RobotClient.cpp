@@ -11,6 +11,9 @@
 
 #include "Robot.h"
 #include "Compression.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #define TIMEOUT 5.0
 #define MESSAGESIZE 1000
