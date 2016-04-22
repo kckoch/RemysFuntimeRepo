@@ -354,7 +354,7 @@ void runCommands(unsigned int polygonSides, unsigned int numCommands) {
     
     fp = fopen(filename, "w+");
     for(int l = 0; l < retSize; l++) {
-    	fputc(resp[i], fp);
+    	fputc(resp + i, fp);
     }
     fclose(fp);
     
