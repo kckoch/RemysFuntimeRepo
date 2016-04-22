@@ -170,166 +170,164 @@ void runCommands(unsigned int polygonSides, unsigned int numCommands) {
     for(index = 0; index < polygonSides; index++) { 
 		if(numCommands == 8) fprintf(stderr, "~~~ Sending commands for %hu-sided Polygon, side %hu\n", polygonSides, index);
 		else                 fprintf(stderr, "~~~ Printing out the final state of the robot\n");
-    for(n = 0; n < numCommands; n++) {
-        // ~~~ Indicate which command we are running
-        fprintf(stderr, "Issuing robot command: %s", commands[n]);        
-        
-        // ~~~ Build UDP Message Body
-        // Allocate memory for the message body
-        unsigned int messageSize = 6 + strlen(robotID) + strlen(commands[n]);
-        void* messageBody = (void*)malloc(messageSize);
+		for(n = 0; n < numCommands; n++) {
+		    // ~~~ Indicate which command we are running
+		    fprintf(stderr, "Issuing robot command: %s", commands[n]);        
+		    
+		    // ~~~ Build UDP Message Body
+		    // Allocate memory for the message body
+		    unsigned int messageSize = 6 + strlen(robotID) + strlen(commands[n]);
+		    void* messageBody = (void*)malloc(messageSize);
 
-        // Insert the three necessary components
-        void* parser = messageBody;
-        *(unsigned int*)parser = htonl(commID); parser += 4;           // 1) Insert the randomized communication ID
-        strcpy((char*)parser, robotID); parser += strlen(robotID) + 1; // 2) Insert the robot ID
-        strcpy((char*)parser, commands[n]);                            // 3) Insert the command
-        
-        //----Sent message will not be encoded
-//        int new_size;
-//        char *encoded = encodeMessage((const char *)messageBody, messageSize, &new_size);
-//
-//        if (sendto(sock, encoded, new_size, 0, (struct sockaddr *) &robotServAddr, sizeof(robotServAddr)) != new_size)
-//            DieWithError("\nsendto() sent a different number of bytes than expected\n");
-//        free(encoded);
+		    // Insert the three necessary components
+		    void* parser = messageBody;
+		    *(unsigned int*)parser = htonl(commID); parser += 4;           // 1) Insert the randomized communication ID
+		    strcpy((char*)parser, robotID); parser += strlen(robotID) + 1; // 2) Insert the robot ID
+		    strcpy((char*)parser, commands[n]);                            // 3) Insert the command
+		    
+		    //----Sent message will not be encoded
+	        int new_size;
+	        char *encoded = encodeMessage((const char *)messageBody, messageSize, &new_size);
+	
+	        if (sendto(sock, encoded, new_size, 0, (struct sockaddr *) &robotServAddr, sizeof(robotServAddr)) != new_size)
+	            DieWithError("\nsendto() sent a different number of bytes than expected\n");
+	        free(encoded);
 
-        // ~~~ The message to the middleware
-        if (sendto(sock, messageBody, messageSize, 0, (struct sockaddr *) &robotServAddr, sizeof(robotServAddr)) != messageSize)
-            DieWithError("\nsendto() sent a different number of bytes than expected\n");
+		    // ~~~ The message to the middleware
+//		    if (sendto(sock, messageBody, messageSize, 0, (struct sockaddr *) &robotServAddr, sizeof(robotServAddr)) != messageSize)
+//		        DieWithError("\nsendto() sent a different number of bytes than expected\n");
 
-        free(messageBody); // Free the memory of the message, now that it is not longer in use
+		    free(messageBody); // Free the memory of the message, now that it is not longer in use
 
-        // ~~~ Declare the variables involved in receiving the response        
-        unsigned int finalMessageSize;  // The message size of the pesky last part of the message
-        unsigned int robotResponseSize; // Size (number of characters) of the robot's response
-        unsigned int recvCommID;        // The communication ID that we received back from the server
-        unsigned int toRecv;            // The number of messages we expect to receive
-        unsigned int recvIndex;         // The index of the message are are currently receiving
-        char** messageSegments = NULL;  // The array of strings that will hold the constituent parts of the message
+		    // ~~~ Declare the variables involved in receiving the response        
+		    unsigned int finalMessageSize;  // The message size of the pesky last part of the message
+		    unsigned int robotResponseSize; // Size (number of characters) of the robot's response
+		    unsigned int recvCommID;        // The communication ID that we received back from the server
+		    unsigned int toRecv;            // The number of messages we expect to receive
+		    unsigned int recvIndex;         // The index of the message are are currently receiving
+		    char** messageSegments = NULL;  // The array of strings that will hold the constituent parts of the message
 
-        double remainingTime     = TIMEOUT;   // The remaining time in seconds
-        double remainingNanoTime = 0;         // The remaining time in nanoseconds
-        double beginTime         = getTime(); // The time upon sending the message
+		    double remainingTime     = TIMEOUT;   // The remaining time in seconds
+		    double remainingNanoTime = 0;         // The remaining time in nanoseconds
+		    double beginTime         = getTime(); // The time upon sending the message
 
-        // ~~~ Continue until we break due to receive the entirety of the respone
-        while(1) {
-            // ~~~ Prepare the time-out structure
-            FD_ZERO(&readfds);              // Remove everything from the set
-            FD_SET(sock, &readfds);         // Add our socket to the set
-            tv.tv_sec  = remainingTime;     // We shall wait for the remaining time (seconds part)
-            tv.tv_usec = remainingNanoTime; // We shall wait for the remaining time (nanoseconds
+		    // ~~~ Continue until we break due to receive the entirety of the respone
+		    while(1) {
+		        // ~~~ Prepare the time-out structure
+		        FD_ZERO(&readfds);              // Remove everything from the set
+		        FD_SET(sock, &readfds);         // Add our socket to the set
+		        tv.tv_sec  = remainingTime;     // We shall wait for the remaining time (seconds part)
+		        tv.tv_usec = remainingNanoTime; // We shall wait for the remaining time (nanoseconds
 
-            // ~~~ Wait to see if a message arrives in time
-            if(select(sock + 1, &readfds, NULL, NULL, &tv)) {
-                // ~~~ Receive the message
-                fromSize = sizeof(fromAddr);
-                respStringLen = recvfrom(sock, recvBody, MESSAGESIZE, 0, (struct sockaddr *) &fromAddr, &fromSize);
+		        // ~~~ Wait to see if a message arrives in time
+		        if(select(sock + 1, &readfds, NULL, NULL, &tv)) {
+		            // ~~~ Receive the message
+		            fromSize = sizeof(fromAddr);
+		            respStringLen = recvfrom(sock, recvBody, MESSAGESIZE, 0, (struct sockaddr *) &fromAddr, &fromSize);
 
-                // ~~~ Determine the important variables from the response            
-                robotResponseSize = respStringLen - 12;
+		            // ~~~ Determine the important variables from the response            
+		            robotResponseSize = respStringLen - 12;
 
-                // ~~~ Parse the relevant information from the middleware response
-                parser = recvBody;
-                recvCommID = ntohl(*(unsigned int*)parser); parser += 4; // Ascertain the received comm ID
-                toRecv     = ntohl(*(unsigned int*)parser); parser += 4; // Ascertain the number of messages to receive
-                recvIndex  = ntohl(*(unsigned int*)parser); parser += 4; // Ascertain the index of the message
+		            // ~~~ Parse the relevant information from the middleware response
+		            parser = recvBody;
+		            recvCommID = ntohl(*(unsigned int*)parser); parser += 4; // Ascertain the received comm ID
+		            toRecv     = ntohl(*(unsigned int*)parser); parser += 4; // Ascertain the number of messages to receive
+		            recvIndex  = ntohl(*(unsigned int*)parser); parser += 4; // Ascertain the index of the message
 
-                // ~~~ Determine if the message should be ignored
-                if (robotServAddr.sin_addr.s_addr != fromAddr.sin_addr.s_addr) DieWithError("\nReceived a message from an unknown source.\n");
-                if (commID != recvCommID) DieWithError("\nReceived a message from an unknown source.\n");
+		            // ~~~ Determine if the message should be ignored
+		            if (robotServAddr.sin_addr.s_addr != fromAddr.sin_addr.s_addr) DieWithError("\nReceived a message from an unknown source.\n");
+		            if (commID != recvCommID) DieWithError("\nReceived a message from an unknown source.\n");
 
-                // ~~~ Prepare the array which holds the message segments if needed
-                int j;
-                if(messageSegments == NULL) {
-                    messageSegments = (char**)malloc(sizeof(char*) * toRecv); // Create the necessary memory
-                    for(j = 0; j < toRecv; j++) messageSegments[j] = NULL;    // Set all of the pointers to NULL
-                }
-                
-                // ~~~ Place the message in the table if it has not been already
-                if(messageSegments[recvIndex] == NULL) {
-                    messageSegments[recvIndex] = (char*)malloc(robotResponseSize);    // Make enough memory for the message
-                    memcpy(messageSegments[recvIndex], parser, robotResponseSize);    // Copy the memory over
-                    if(recvIndex == toRecv - 1) finalMessageSize = robotResponseSize; // And save the size if this is the last segment
-                }
+		            // ~~~ Prepare the array which holds the message segments if needed
+		            int j;
+		            if(messageSegments == NULL) {
+		                messageSegments = (char**)malloc(sizeof(char*) * toRecv); // Create the necessary memory
+		                for(j = 0; j < toRecv; j++) messageSegments[j] = NULL;    // Set all of the pointers to NULL
+		            }
+		            
+		            // ~~~ Place the message in the table if it has not been already
+		            if(messageSegments[recvIndex] == NULL) {
+		                messageSegments[recvIndex] = (char*)malloc(robotResponseSize);    // Make enough memory for the message
+		                memcpy(messageSegments[recvIndex], parser, robotResponseSize);    // Copy the memory over
+		                if(recvIndex == toRecv - 1) finalMessageSize = robotResponseSize; // And save the size if this is the last segment
+		            }
 
-                // ~~~ Determine whether or not we have received all of the segments
-                bool doBreak = 1;
-                for(j = 0; j < toRecv; j++) if(messageSegments[j] == NULL) doBreak = 0;
-                if(doBreak) break;
-                
-				// ~~~ Allow for any additional wait times if needed to get all segments
-                double currentTime = getTime();               // Get the current time
-                double elapsedTime = currentTime - beginTime; // Calculate how much time has elapsed
-                remainingTime = TIMEOUT - elapsedTime;        // Calculate the remaining time we must wait
-                if(remainingTime < 0) DieWithError("\nData not received within timeout delay.\n");
-                else {
-                    remainingNanoTime = getNanoTime(remainingTime);
-                    remainingTime     = (int)remainingTime;
-                }
-            }
-            else DieWithError("\nData not received within timeout delay.\n");
-        }
-        
-        
-        // ~~~ Determine if we are saving text data to the log or image data to a new file
-        FILE* tempFP; // Temp file pointer
-        if(n == 0) { // Save the image
-            if(numCommands == 8) sprintf(filename, "Polygon %hu(%hu).jpg", polygonSides, index);
-			else                 sprintf(filename, "Final Snapshot.jpg");
-            tempFP = fopen(filename, "w");
-        }
-        else { // Log the data
-            if(numCommands == 8) sprintf(filename, "Polygon %hu(%hu) - %s\n", polygonSides, index, commands[n]);
-			else                 sprintf(filename, "%s\n", commands[n]);
-            tempFP = fp;
-            fputs(filename, tempFP); // Title this section of data
-        }       
-        
-		if(n == 1 || n == 2) fprintf(stderr, ": ");
+		            // ~~~ Determine whether or not we have received all of the segments
+		            bool doBreak = 1;
+		            for(j = 0; j < toRecv; j++) if(messageSegments[j] == NULL) doBreak = 0;
+		            if(doBreak) break;
+		            
+					// ~~~ Allow for any additional wait times if needed to get all segments
+		            double currentTime = getTime();               // Get the current time
+		            double elapsedTime = currentTime - beginTime; // Calculate how much time has elapsed
+		            remainingTime = TIMEOUT - elapsedTime;        // Calculate the remaining time we must wait
+		            if(remainingTime < 0) DieWithError("\nData not received within timeout delay.\n");
+		            else {
+		                remainingNanoTime = getNanoTime(remainingTime);
+		                remainingTime     = (int)remainingTime;
+		            }
+		        }
+		        else DieWithError("\nData not received within timeout delay.\n");
+		    }
+		    
+		    
+		    // ~~~ Determine if we are saving text data to the log or image data to a new file
+		    FILE* tempFP; // Temp file pointer
+		    if(n == 0) { // Save the image
+		        if(numCommands == 8) sprintf(filename, "Polygon %hu(%hu).jpg", polygonSides, index);
+				else                 sprintf(filename, "Final Snapshot.jpg");
+		        tempFP = fopen(filename, "w");
+		    }
+		    else { // Log the data
+		        if(numCommands == 8) sprintf(filename, "Polygon %hu(%hu) - %s\n", polygonSides, index, commands[n]);
+				else                 sprintf(filename, "%s\n", commands[n]);
+		        tempFP = fp;
+		        fputs(filename, tempFP); // Title this section of data
+		    }       
+		    
+			if(n == 1 || n == 2) fprintf(stderr, ": ");
 		
-        int j, k;
-        // ~~~ Save all of the message segments but the last
-        for(j = 0; j < toRecv - 1; ++j)
-        for(k = 0; k < MESSAGESIZE - 12; k++) {
-			fputc(messageSegments[j][k], tempFP);
-			if(n == 1 || n == 2) fprintf(stderr, "%c", messageSegments[j][k]);
+		    int j, k;
+		    // ~~~ Save all of the message segments but the last
+		    for(j = 0; j < toRecv - 1; ++j)
+		    for(k = 0; k < MESSAGESIZE - 12; k++) {
+				fputc(messageSegments[j][k], tempFP);
+				if(n == 1 || n == 2) fprintf(stderr, "%c", messageSegments[j][k]);
+			}
+		    
+		    // ~~~ Save the filename message segment
+		    for(i = 0; i < finalMessageSize; i++) {
+				fputc(messageSegments[toRecv - 1][i], tempFP);
+			    if(n == 1 || n == 2) fprintf(stderr, "%c", messageSegments[toRecv - 1][i]);
+			}
+		
+			fprintf(stderr, "\n");
+
+		    // ~~~ Free the array of segments
+		    for(i = 0; i < toRecv; i++) free(messageSegments[i]);
+		    free(messageSegments);
+		    
+			// ~~~ Finish up either the log entry or image write
+		    if(n != 0) { fputs("\n\n", tempFP); fp = tempFP; }
+		    else       fclose(tempFP);
+		    
+		    ++commID; // Increment the commID
+
+		    // ~~~ Allow for more time to wait on the robot's movement
+		    double currentTime = getTime(); // Get the current time
+		    double sleepTime = waitTimes[n] - (currentTime - beginTime); // Calculate the remaining sleep time
+		    if(sleepTime > 0) { // If we need to sleep...
+				// ~~~ Calculate the components of the amount of time we should sleep
+		        double sleepNanoTime = getNanoTime(sleepTime); // In nanoseconds
+		        sleepTime = (int)sleepTime;                    // In seconds
+		        
+				// ~~~ Formulate the timespec structure
+		        struct timespec ts;
+		        ts.tv_sec  = sleepTime;
+		        ts.tv_nsec = sleepNanoTime;
+		        nanosleep(&ts, NULL); // Sleep for the remaining duration
+		    }
 		}
-        
-        // ~~~ Save the filename message segment
-        for(i = 0; i < finalMessageSize; i++) {
-			fputc(messageSegments[toRecv - 1][i], tempFP);
-	        if(n == 1 || n == 2) fprintf(stderr, "%c", messageSegments[toRecv - 1][i]);
-		}
-		
-	    fprintf(stderr, "\n");
-
-        // ~~~ Free the array of segments
-        for(i = 0; i < toRecv; i++) free(messageSegments[i]);
-        free(messageSegments);
-        
-		// ~~~ Finish up either the log entry or image write
-        if(n != 0) { fputs("\n\n", tempFP); fp = tempFP; }
-        else       fclose(tempFP);
-        
-        ++commID; // Increment the commID
-
-        // ~~~ Allow for more time to wait on the robot's movement
-        double currentTime = getTime(); // Get the current time
-        double sleepTime = waitTimes[n] - (currentTime - beginTime); // Calculate the remaining sleep time
-        if(sleepTime > 0) { // If we need to sleep...
-		    // ~~~ Calculate the components of the amount of time we should sleep
-            double sleepNanoTime = getNanoTime(sleepTime); // In nanoseconds
-            sleepTime = (int)sleepTime;                    // In seconds
-            
-			// ~~~ Formulate the timespec structure
-            struct timespec ts;
-            ts.tv_sec  = sleepTime;
-            ts.tv_nsec = sleepNanoTime;
-            nanosleep(&ts, NULL); // Sleep for the remaining duration
-        }
-		
-		
-    }
 	    fprintf(stderr, "\n\n");
     }
 	
