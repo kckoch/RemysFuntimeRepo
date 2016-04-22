@@ -159,8 +159,17 @@ void clientInit(unsigned int polygonSides) {
 void runCommands(unsigned int polygonSides, unsigned int numCommands) {
     // ~~~ Save the data to an appropriately named file
     char* filename = (char*)malloc(4096); // Allocate memory for the filename
-    if(numCommands == 8) sprintf(filename, "Polygon of %hu Sides.data", polygonSides); // Prepare the filename
-	else                 sprintf(filename, "Final State.data");
+    char *finalFilename = (char*)malloc(4096);
+    if(numCommands == 8)
+    {
+	sprintf(filename, "Polygon of %hu Sides.data", polygonSides); // Prepare the filename
+        sprintf(finalFilename, "Polygon of %hu Sides.data", polygonSides); // Prepare the 
+    }
+    else
+    {
+        sprintf(filename, "Final State.data");
+        sprintf(finalFilename, "Final State.data");
+    }
     FILE* fp = fopen(filename, "w"); // Open up the file for writing
     
     // ~~~ Run all 8 of the commands
@@ -171,6 +180,13 @@ void runCommands(unsigned int polygonSides, unsigned int numCommands) {
 		if(numCommands == 8) fprintf(stderr, "~~~ Sending commands for %hu-sided Polygon, side %hu\n", polygonSides, index);
 		else                 fprintf(stderr, "~~~ Printing out the final state of the robot\n");
 		for(n = 0; n < numCommands; n++) {
+
+		    if(n == 7 && index == 3)
+		    {
+			// Seg fault incoming
+			int x = 0;
+		    }
+
 		    // ~~~ Indicate which command we are running
 		    fprintf(stderr, "Issuing robot command: %s", commands[n]);        
 		    
@@ -344,24 +360,27 @@ void runCommands(unsigned int polygonSides, unsigned int numCommands) {
     struct stat st;
 
   // stat() returns -1 on error. Skipping check in this example
-  	stat(filename, &st);
+  	stat(finalFilename, &st);
     file_size = st.st_size;
-    fp = fopen(filename, "r");
+    temp = (char*) malloc(file_size + 1);
+    fp = fopen(finalFilename, "r");
     for(int x = 0; x < file_size; x++) {
     	temp[x] = fgetc(fp);
     }
+    temp[file_size] = '\0';
     fclose(fp);
     
     int retSize;
     char *resp = decodeMessage(temp, file_size, &retSize);
     
-    fp = fopen(filename, "w+");
+    fp = fopen(finalFilename, "w+");
     for(int l = 0; l < retSize; l++) {
     	fputc(resp[i], fp);
     }
     fclose(fp);
     
     free(filename); // Free the filename
+    free(finalFilename);
 }
 
 // ~~~ getTime(): gets the current time of the system in seconds

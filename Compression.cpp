@@ -359,6 +359,10 @@ int main()
 
 map<string, int> createDictionary(string input)
 {
+	DEBUG("Creating dictionary from string of size " << input.length() << endl);
+//	DEBUG(debugString(input) << endl);
+
+
 	map<string, int> dictionary;
 
 	// Parse input into sections of 4 characters long, and
@@ -369,7 +373,7 @@ map<string, int> createDictionary(string input)
 		dictionary[input.substr(i-4, 4)] += 1;
 	}
 
-	DEBUG("Dictionary.sizE() = " << dictionary.size() << endl);
+
 
 	// Find tokens worth trimming, ie, tokens that appear more than 5 times
 	// (Any less than 5 times, and it would be more expensive to keep them in
@@ -386,7 +390,7 @@ map<string, int> createDictionary(string input)
 		}
 	}
 
-	DEBUG("Dictionary.sizE() = " << dictionary.size() << endl);
+	DEBUG("Dictionary.size() after = " << dictionary.size() << endl);
 
 
 //	for(map<string, int>::iterator i = dictionary.begin(); i != dictionary.end(); i++)
@@ -467,7 +471,7 @@ string encodeMessage(const string &message, map<string, int> dictionary)
 //			}
 //		}
 
-		DEBUG("Addint to string " << i->first << endl);
+//		DEBUG("Addint to string " << i->first << endl);
 		addToString(ret, i->first);
 //		ret += i->first;
 
