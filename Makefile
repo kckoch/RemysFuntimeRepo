@@ -1,4 +1,4 @@
-BINS=robotClient robotServer Compression
+BINS=robotClient robotServer
 
 all: $(BINS)
 
