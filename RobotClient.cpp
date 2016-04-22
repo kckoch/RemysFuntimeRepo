@@ -338,19 +338,27 @@ void runCommands(unsigned int polygonSides, unsigned int numCommands) {
     // Use that character array as a parameter to decodeMessage
     // Save results of decodeMessage to a new character array
     // Overwrite file with contents of decoded message
-    fp = fopen(filename, "r");
-    fseek(fp, 0L, SEEK_END);
-	int sz = ftell(fp);
-	fseek(fp, 0L, SEEK_SET);
-	
-	char *temp = NULL;
-	fgets(temp, sz, (FILE *)fp);
-	fclose(fp);
-	int retSize;
-	char *resp = decodeMessage(temp, sz, &retSize);
-	
-	fp = fopen(filename, "w+");
-	fputs(resp, fp);
+    off_t file_size;
+    char *buffer;
+    struct stat stbuf;
+    int fd;
+  
+    fd = open(filename, O_RDONLY);
+    if (fd == -1) {
+     	//error
+    }
+  
+    if ((fstat(fd, &stbuf) != 0) || (!S_ISREG(stbuf.st_mode))) {
+         /* Handle error */
+    }
+  
+    file_size = stbuf.st_size;
+    fclose(fd);
+    int retSize;
+    char *resp = decodeMessage(temp, sz, &retSize);
+    
+    fp = fopen(filename, "w+");
+    fputs(resp, fp);
     fclose(fp);
     
     free(filename); // Free the filename
