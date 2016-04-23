@@ -15,4 +15,4 @@ dummyServer: dummyServer.c serverMessenger.h serverMessenger.c $(DEPS)
 	${CC} -o $@ dummyServer.c serverMessenger.c utility.c ${CFLAGS}
 
 clean:
-	rm -f ${PROGS}
+	rm -f ${PROGS} position* *.jpg
