@@ -41,7 +41,7 @@ int addToMessage(char *message, const char *add)
 
 	return addLen + 1;
 
-}
+}git
 
 int writeGetSnapshot(char *message)
 {

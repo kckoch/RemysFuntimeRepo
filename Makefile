@@ -6,7 +6,7 @@ DEPS = utility.h utility.c Makefile setupClientSocket.inc
 all: $(PROGS)
 
 robotClient: client.c clientMessenger.h clientMessenger.c $(DEPS)
-	${CC} -o $@ client.c clientMessenger.c utility.c ${CFLAGS}
+	${CC} -o $@ -g client.c clientMessenger.c utility.c ${CFLAGS}
 
 robotServer: server.c serverMessenger.h serverMessenger.c $(DEPS)
 	${CC} -o $@ server.c serverMessenger.c utility.c ${CFLAGS}
