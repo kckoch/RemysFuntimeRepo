@@ -41,7 +41,7 @@ int addToMessage(char *message, const char *add)
 
 	return addLen + 1;
 
-}git
+}
 
 int writeGetSnapshot(char *message)
 {
@@ -54,29 +54,37 @@ int writeGetSnapshot(char *message)
 }
 
 // Generate and send the desired command sequence
-void sendCommandSequence(int numSides)
+void sendCommandSequence(int numSides, int clockwise, int length)
 {
-	char *turnRequest = (char *)malloc(20);
-	char *turnRequestReverse = (char *)malloc(20);
-	sprintf(turnRequest, "TURN %.10f", -M_PI/4);
-	sprintf(turnRequestReverse, "TURN %.10f", M_PI/4);
+	double turnAngle;
+	if(clockwise) turnAngle = M_PI - ((numSides - 2)*M_PI/numSides);
+	else turnAngle = M_PI - ((numSides - 2)*M_PI/numSides);
+
+	char *turnRequest = (char *)malloc(40);
+	sprintf(turnRequest, "TURN %.10f %.10f", -M_PI/4, turnAngle);
+	char *moveRequest = (char *)malloc(40);
+	sprintf(moveRequest, "MOVE 1 %i", length);
 	
 	int turnRequestLen = strlen(turnRequest);
-	int turnRequestLenReverse = strlen(turnRequestReverse);
 
 //	DEBUG2("turnRequest = %s\n", turnRequest);
 //	DEBUG1("turnRequest != LOL\n");
-//	DEBUG2("turnRequestReverse = %s\n", turnRequestReverse);
 //	DEBUG2("turnRequestLen = %i\n", turnRequestLen);
-//	DEBUG2("turnRequestLenReverse = %i\n", turnRequestLenReverse);
 
-	int numCommands = 4 + (numSides * 8) + ((numSides - 1) * 8);
+	DEBUG2("moveRequest = %s\n", moveRequest);
+//	DEBUG1("turnRequest != LOL\n");
+	DEBUG2("moveRequestLen = %i\n", moveRequestLen);
+
+
+	int numCommands = 4 + (numSides * 8);
 	DEBUG2("NumComamnds = %i\n", numCommands);
 
 	int bufferLen = numCommands + 1 + // 1 bytes for each command, + null terminator
-			68 /* intiial getSnapshot() * 2 */ + (numSides * (48 + turnRequestLen)) /* number of sides * length of commands per side */ + ((numSides-1) * (48 + turnRequestLenReverse)) /* Same, but for reverse trace */; // Number of bytes in commands
+			34 /* intiial getSnapshot() */ + (numSides * (48 + turnRequestLen)) /* number of sides * length of commands per side */; // Number of bytes in commands
 	char *buffer = (char *) malloc(bufferLen);
 	char *writer = buffer;
+
+	DEBUG2("BUFFERLEN = %i\n", bufferLen);
 
 	int i;
 
@@ -85,7 +93,7 @@ void sendCommandSequence(int numSides)
 	writeGetSnapshot(writer);
 	for(i = 0; i < numSides;i++)
 	{
-		writer += addToMessage(writer, "MOVE 1");
+		writer += addToMessage(writer, moveRequest);
 		writer += addToMessage(writer, "STOP");
 		writer += writeGetSnapshot(writer);
 		writer += addToMessage(writer, turnRequest);
@@ -97,7 +105,7 @@ void sendCommandSequence(int numSides)
 	writeGetSnapshot(writer);
 	for(i = 0; i < numSides;i++)
 	{
-		writer += addToMessage(writer, "MOVE 1");
+		writer += addToMessage(writer, moveRequest);
 		writer += addToMessage(writer, "STOP");
 		writer += writeGetSnapshot(writer);
 		writer += addToMessage(writer, turnRequest);
@@ -313,8 +321,13 @@ int main(int argc, char** argv) {
 
 	if(USE_NEW_METHOD == 1)
 	{
-		sendCommandSequence(N);
+		sendCommandSequence(N, true, L);
 		parseResponseSequence();
+
+		sendCommandSequence(N-1, false, L);
+		parseResponseSequence();
+
+
 	}
 	else
 	{
