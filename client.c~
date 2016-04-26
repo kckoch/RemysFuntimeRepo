@@ -66,6 +66,7 @@ void sendCommandSequence(int numSides, int clockwise, int length)
 	sprintf(moveRequest, "MOVE 1 %i", length);
 	
 	int turnRequestLen = strlen(turnRequest);
+	int moveRequestLen = strlen(moveRequest);
 
 //	DEBUG2("turnRequest = %s\n", turnRequest);
 //	DEBUG1("turnRequest != LOL\n");
@@ -118,6 +119,10 @@ void sendCommandSequence(int numSides, int clockwise, int length)
 //	DEBUG3("bufferLength = %i/%i\n", bufferLen, RESPONSE_MESSAGE_SIZE);
 //	int segments = bufferLen / RESPONSE_MESSAGE_SIZE + 1;
 //	DEBUG2("Segments = %i\n", segments);
+
+	
+	// Garbage variables for last 2
+	sendRequestNoResponse(buffer, &turnRequestLen, 5.0);
 
 	
 

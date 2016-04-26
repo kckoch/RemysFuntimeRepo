@@ -120,6 +120,12 @@ void sendCommandSequence(int numSides, int clockwise, int length)
 //	int segments = bufferLen / RESPONSE_MESSAGE_SIZE + 1;
 //	DEBUG2("Segments = %i\n", segments);
 
+	free(turnRequest);
+	free(moveRequest);
+	
+	// Garbage variables for last 2
+	sendRequestNoResponse(buffer, &turnRequestLen, 5.0);
+
 	
 
 

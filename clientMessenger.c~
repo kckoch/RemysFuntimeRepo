@@ -91,7 +91,7 @@ void sendRequestNoResponse(char* requestString, int* responseLength, double time
 		next = 0;
 		packetLen = MIN(maxPayload, informationLeft);
 DEBUG2("REQUESTING %i\n", packetLen);
-		request = malloc(requestLen);
+		request = (void *) malloc(requestLen);
 DEBUG3("SEGMENT %i/%i\n", segment, segmentCount);
 	
 		//insert ID
