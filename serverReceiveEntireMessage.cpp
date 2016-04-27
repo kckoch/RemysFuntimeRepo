@@ -30,6 +30,7 @@ char* generateHTTPRequest(char* robotAddress, char* robotID, char* requestStr, c
 char* getRobotPortForRequestStr(char* requestStr);
 void flushBuffersAndExit(int x);
 
+// Receive messages from the client until one ends with the null byte, indicating that all commands have been sent
 string receiveEntireMessage(int &clientSock, struct sockaddr_in &localAddress)
 {
 	string ret;

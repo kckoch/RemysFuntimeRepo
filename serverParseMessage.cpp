@@ -30,7 +30,7 @@ char* generateHTTPRequest(char* robotAddress, char* robotID, char* requestStr, c
 char* getRobotPortForRequestStr(char* requestStr);
 void flushBuffersAndExit(int x);
 
-
+// Perform each command from message and send an appropriate response to the client
 void parseMessage(string &message, int &clientSock, struct sockaddr_in &localAddress)
 {
 
