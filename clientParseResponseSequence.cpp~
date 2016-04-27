@@ -9,11 +9,14 @@
 #include <sys/time.h>
 #include <math.h>
 #include <string.h>
+#include "string"
 
 #define USE_NEW_METHOD 1
 #define DEBUG1(X) fprintf(stderr, X);
 #define DEBUG2(X, Y) fprintf(stderr, X, Y);
 #define DEBUG3(X, Y, Z) fprintf(stderr, X, Y, Z);
+
+using namespace std;
 
 void tracePolygon(int numSides, bool clockwise);
 void getSnapshot();
@@ -27,12 +30,18 @@ const double COMMAND_TIMEOUT = 0.95;
 const double DATA_TIMEOUT = 5.0;
 
 // Returns length of string added
-int addToMessage(char *message, const char *add)
+void addToMessage(string &message, const char *add)
 {
-//	DEBUG2("ADDING TO MESSAGE: {%s}\n", add);
-//	DEBUG2("MESSAGE BEFORE: {%s}\n", message);
+	DEBUG2("ADDING TO MESSAGE: {%s}\n", add);
+	DEBUG2("MESSAGE BEFORE: {%s}\n", message);
 	int addLen = strlen(add);
-	message[0] = addLen;
+	message += addLen;
+	for(int i = 0; i < addLen; i++)
+	{
+		message += add[i];
+	}
+	return;
+/*	message[0] = addLen;
 	strcpy(message+1, add);
 //	DEBUG2("MESSAGE AFTER: {%s}\n", message);
 //	DEBUG2("MESSAGE %i -> ", *message);
@@ -40,17 +49,15 @@ int addToMessage(char *message, const char *add)
 //	DEBUG2("%i\n", *message);
 
 	return addLen + 1;
-
+*/
 }
 
-int writeGetSnapshot(char *message)
+void writeGetSnapshot(string &buffer)
 {
-	message += addToMessage(message, "GET IMAGE");
-	message += addToMessage(message, "GET GPS");
-	message += addToMessage(message, "GET DGPS");
-	message += addToMessage(message, "GET LASERS");
-
-	return 38;
+	addToMessage(buffer, "GET IMAGE");
+	addToMessage(buffer, "GET GPS");
+	addToMessage(buffer, "GET DGPS");
+	addToMessage(buffer, "GET LASERS");
 }
 
 // Generate and send the desired command sequence
@@ -81,9 +88,11 @@ void sendCommandSequence(int numSides, int clockwise, int length)
 	DEBUG2("NumComamnds = %i\n", numCommands);
 
 	int bufferLen = numCommands + 1 + // 1 bytes for each command, + null terminator
-			34 /* intiial getSnapshot() */ + (numSides * (48 + turnRequestLen)) /* number of sides * length of commands per side */; // Number of bytes in commands
-	char *buffer = (char *) malloc(bufferLen);
-	char *writer = buffer;
+			34 /* intiial getSnapshot() */ + (numSides * (48 + turnRequestLen)) /* number of sides * length of commands per side */ + 1 /* null terminator */; // Number of bytes in commands
+	string buffer;
+	buffer.reserve(bufferLen);
+//	char *buffer = (char *) malloc(bufferLen);
+//	char *writer = buffer;
 
 	DEBUG2("BUFFERLEN = %i\n", bufferLen);
 
@@ -91,29 +100,35 @@ void sendCommandSequence(int numSides, int clockwise, int length)
 
 	// First iteration - N sides, clockwise
 	// Write initial getSnapshot() equivalent
-	writeGetSnapshot(writer);
+	writeGetSnapshot(buffer);
 	for(i = 0; i < numSides;i++)
 	{
-		writer += addToMessage(writer, moveRequest);
-		writer += addToMessage(writer, "STOP");
-		writer += writeGetSnapshot(writer);
-		writer += addToMessage(writer, turnRequest);
-		writer += addToMessage(writer, "STOP");
+		addToMessage(buffer, moveRequest);
+		addToMessage(buffer, "STOP");
+		writeGetSnapshot(buffer);
+		addToMessage(buffer, turnRequest);
+		addToMessage(buffer, "STOP");
 	}
 	
 	// Second iteration - N-1 sides, counterclockwise
+	// IN THE FINAL RELEASE, THIS WILL NOT OCCUR HERE - IT WILL OCCUR IN A SEPARATE PACKET
+/*
 	// Write initial getSnapshot() equivalent
-	writeGetSnapshot(writer);
+	writeGetSnapshot(buffer);
 	for(i = 0; i < numSides;i++)
 	{
-		writer += addToMessage(writer, moveRequest);
-		writer += addToMessage(writer, "STOP");
-		writer += writeGetSnapshot(writer);
-		writer += addToMessage(writer, turnRequest);
-		writer += addToMessage(writer, "STOP");
+		addToMessage(buffer, moveRequest);
+		addToMessage(buffer, "STOP");
+		writeGetSnapshot(buffer);
+		addToMessage(buffer, turnRequest);
+		addToMessage(buffer, "STOP");
 	}
-	
-	DEBUG2("buffer = %s\n", buffer);
+*/	
+
+
+
+	buffer += '\0'; // Null-terminate the data
+	DEBUG2("client.c buffer = %s\n", buffer.c_str());
 	
 	
 //	DEBUG3("bufferLength = %i/%i\n", bufferLen, RESPONSE_MESSAGE_SIZE);
@@ -124,7 +139,10 @@ void sendCommandSequence(int numSides, int clockwise, int length)
 	free(moveRequest);
 	
 	// Garbage variables for last 2
-	sendRequestNoResponse(buffer, &turnRequestLen, 5.0);
+	char *cStr = (char *)malloc(buffer.size());
+	memcpy(cStr, buffer.c_str(), buffer.size());
+	sendRequestNoResponse(cStr, &turnRequestLen, 5.0);
+	free(cStr);
 
 	
 

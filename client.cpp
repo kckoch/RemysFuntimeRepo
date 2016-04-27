@@ -340,7 +340,7 @@ int main(int argc, char** argv) {
 	
 	setupMessenger(serverHost, serverPort, robotID);
 
-	if(USE_NEW_METHOD == 1)
+#if USE_NEW_METHOD == 1
 	{
 		sendCommandSequence(N, true, L);
 		parseResponseSequence();
@@ -350,11 +350,11 @@ int main(int argc, char** argv) {
 
 
 	}
-	else
+#else
 	{
 		tracePolygon(N, true);
 		tracePolygon(N-1, false);
 	}
-
+#endif
 	return 0;
 }

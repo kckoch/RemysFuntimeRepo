@@ -1,6 +1,7 @@
 #include "clientMessenger.h"
 #include "utility.h"
 #include "setupClientSocket.inc"
+#include "string"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,6 +20,8 @@
 #define DEBUG3(X, Y, Z) fprintf(stderr, X, Y, Z);
 
 #define MIN(a,b) ((a) < (b) ? a : b)
+
+using namespace std;
 
 
 const int RESPONSE_MESSAGE_SIZE = 1000;
@@ -53,6 +56,16 @@ void timedOut(int ignored) {
 	quit("Timed out without receiving server response");
 }
 
+void addToString(string &str, const char *add, int size)
+{
+//	DEBUG3("ADDING {%s} TO {%s}\n", add, str.c_str());
+	for(int i = 0; i < size; i++)
+	{
+		str += add[i];
+	}
+//	DEBUG2("STR AFTER = {%s}\n", str.c_str());
+}
+
 /////
 /*
 	Send request, receive and reassemble response
@@ -69,20 +82,20 @@ void sendRequestNoResponse(char* requestString, int* responseLength, double time
 	int headLen = 4+strlen(robotID)+1+8;
 	DEBUG3("headLen = %i/%i\n", headLen, RESPONSE_MESSAGE_SIZE);
 	int maxPayload = RESPONSE_MESSAGE_SIZE - headLen;
-	int segmentCount = ((strlen(requestString)) / maxPayload);
+	int segmentCount = ((strlen(requestString) + 1) / maxPayload); // +1 includes null-terminator
 	DEBUG2("segmentCount = %i\n", segmentCount);
 	////
 	static uint32_t ID = 0;
 	
-	void* request;
+//	void* request;
 	int next;
 	int numBytesSent;
 	int segment;
 	int packetLen;
-	int requestLen = 4+strlen(robotID)+1+8+strlen(requestString)+1;
+	int requestLen;// = 4+strlen(robotID)+1+8+strlen(requestString)+1;
 	char *writer = requestString;
 
-	int informationLeft = strlen(requestString);
+	int informationLeft = strlen(requestString) + 1; // +1 includes null terminator
 	DEBUG2("InformationLeft = %i\n", informationLeft);
 	// segmentCount is 0-based, so if there is 1 segment, segmentCount == 0
 	for(segment = 0; segment <= segmentCount; segment++)
@@ -90,46 +103,67 @@ void sendRequestNoResponse(char* requestString, int* responseLength, double time
 		DEBUG3("SEGMENT %i/%i\n", segment, segmentCount);
 		next = 0;
 		packetLen = MIN(maxPayload, informationLeft);
-DEBUG2("REQUESTING %i\n", packetLen);
-		request = malloc(requestLen);
+		requestLen = packetLen + headLen;
+DEBUG2("REQUESTING %i\n", requestLen);
+		
+		string request;
+		request.reserve(requestLen);
+DEBUG1("LOL\n");
+//		request = malloc(requestLen);
 DEBUG3("SEGMENT %i/%i\n", segment, segmentCount);
 	
-		//insert ID
-		*((uint32_t*)request) = htonl(ID);
-DEBUG3("SEGMENT %i/%i\n", segment, segmentCount);
-		next = 4;
+		char temp[4];
+		//insert IDk
+		*((uint32_t*) (void *) &(temp[0])) = htonl(ID);
+		addToString(request, &temp[0], 4);
+//		*((uint32_t*) (void *) (request[next])) = htonl(ID);
+		next += sizeof(ID);
+
 	
 		//insert robotID string
-		memcpy(((char*)request)+next, robotID, strlen(robotID)+1);
+		addToString(request, robotID, strlen(robotID)+1);
+//		memcpy((&(temp[0]]), robotID, strlen(robotID)+1);
+//		memcpy(((char*)request[next]), robotID, strlen(robotID)+1);
 		next += strlen(robotID)+1;
 
-DEBUG3("SEGMENT %i/%i\n", segment, segmentCount);
-
 		//insert # messages
-		memcpy(((char*)request)+next, &segmentCount, sizeof(int));
-		next += 4;
+		memcpy(&(temp[0]), &segmentCount, sizeof(int));
+		addToString(request, temp, sizeof(int));
+//		memcpy(((char*)request[next]), &segmentCount, sizeof(int));
+		next += sizeof(int);
 
 		//insert current message index
-		memcpy(((char*)request)+next, &segment, sizeof(int));
-		next += 4;
+		memcpy(&(temp[0]), &segment, sizeof(int));
+		addToString(request, temp, sizeof(int));
+//		memcpy(((char*)request[next]), &segment, sizeof(int));
+		next += sizeof(int);
 
-DEBUG3("SEGMENT %i/%i\n", segment, segmentCount);
 
 		//insert request string segment
-		memcpy(((char*)request)+next, writer, packetLen);
+		addToString(request, writer, packetLen);
+		DEBUG2("PACKELEN WROTE = %i\n", packetLen);
+//		memcpy(((char*)request[next]), writer, packetLen);
 		next += packetLen;
 		writer += packetLen;
 
-DEBUG3("SEGMENT %i/%i\n", segment, segmentCount);
+DEBUG1("PRINTING VARIABLES\n");
+int Y;
+for(Y = 0; Y < (requestLen); Y++)
+{
+	DEBUG3("> %i | %c \n", (int) (unsigned char) request[Y], request[Y] );
+}
+DEBUG2("%i\n", requestLen);
+
+
 	
 		//send request
-		numBytesSent = send(sock, request, requestLen, 0);
+		numBytesSent = send(sock, request.c_str(), packetLen, 0);
 		if(numBytesSent < 0)
 			quit("could not send request - send() failed");
-		else if(numBytesSent != requestLen)
+		else if(numBytesSent != packetLen)
 			quit("send() didn't send the whole request");
 
-		free(request);
+//		free(request);
 		informationLeft -= maxPayload;
 	}
 	return;
@@ -146,7 +180,7 @@ DEBUG3("SEGMENT %i/%i\n", segment, segmentCount);
 	int numMessages = extractNumMessages(message);
 	int i = extractSequenceNum(message);
 	
-	void** messages = malloc(sizeof(void*)*numMessages);
+	void** messages = (void **) malloc(sizeof(void*)*numMessages);
 	memset(messages, 0, sizeof(void*)*numMessages);
 	
 	messages[i] = message;
@@ -250,7 +284,7 @@ void* sendRequest(char* requestString, int* responseLength, double timeout) {
 	int numMessages = extractNumMessages(message);
 	int i = extractSequenceNum(message);
 	
-	void** messages = malloc(sizeof(void*)*numMessages);
+	void** messages = (void **) malloc(sizeof(void*)*numMessages);
 	memset(messages, 0, sizeof(void*)*numMessages);
 	
 	messages[i] = message;
