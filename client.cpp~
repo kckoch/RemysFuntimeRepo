@@ -312,10 +312,9 @@ double getTime() {
 }
 
 int main(int argc, char** argv) {
-
-//	DEBUG1("SKIPPING STRAIGHT TO PARSING\n");
-//	parseResponseSequenceTest(4 + (8 /* numsides */  * 8));
-//	exit(-1);
+	DEBUG1("SKIPPING STRAIGHT TO PARSING\n");
+	parseResponseSequenceTest(4 + (8 /* numsides */  * 8));
+	exit(-1);
 
 	//get command line args
 	if(argc != 6) {

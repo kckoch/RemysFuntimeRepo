@@ -397,7 +397,7 @@ void* recvMessage(int ID, int* messageLength) {
 	while(true) {
 		int len = recv(sock, message, RESPONSE_MESSAGE_SIZE, 0);
 		if(len <= 0)
-			quit("server doesn't exist or recv() failed");
+			quit("@server doesn't exist or recv() failed");
 		if(len < 12)
 			quit("improper server response message -- doesn't include required headers");
 		
