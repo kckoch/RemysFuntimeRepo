@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 	for(;;) {
 		plog("Start loop to handle client request");
 		
-		struct sockaddr_in clientAddress;
+//		struct sockaddr_in clientAddress;
 		string received = receiveEntireMessage(clientSock, localAddress);
 		parseMessage(received, clientSock, localAddress);
 
