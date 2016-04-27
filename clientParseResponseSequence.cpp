@@ -314,6 +314,7 @@ void handleResponse(int commandIndex)
 // Receive all transmissions from the server
 // Sort them into appropriate response buffers
 // Parse the data from the response buffers when applicable
+// Return when "numCommands" commands have successfully been completed and parsed
 void parseResponseSequence(int numCommands)
 {
 	DEBUG1("PARSERESPONSESEQUENCE START\n");

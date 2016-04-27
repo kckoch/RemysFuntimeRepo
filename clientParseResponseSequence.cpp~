@@ -439,7 +439,10 @@ void parseResponseSequenceTest(int numCommands)
 	}
 
 	free(message);
+
+// Second iteration - only useful if testing example1 with example 2
 ////////////////////
+/*
 	message = (char *) malloc(RESPONSE_MESSAGE_SIZE);
 	
 	// Simulate receiving example
@@ -479,7 +482,7 @@ void parseResponseSequenceTest(int numCommands)
 	string finalMessage = extractMessage(responses[commandIndex]);
 	DEBUG("finalMessage = {" << finalMessage << "}!!! " << finalMessage.size() << "\n");
 	elaborateString(finalMessage);
-
+*/
 	return;
 }
 
