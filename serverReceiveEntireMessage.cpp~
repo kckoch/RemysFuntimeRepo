@@ -48,8 +48,8 @@ string receiveEntireMessage(int &clientSock)
 //	DEBUG("RECEIVE ENTIRE MESSAGE START\n");
 	string ret;
 
-	int x = 0;
-	string test[2] = {"1", "2"};
+//	int x = 0;
+//	string test[2] = {"1", "2"};
 
 	do
 	{
@@ -61,13 +61,13 @@ string receiveEntireMessage(int &clientSock)
 		
 		int recvMsgSize;
 		//Block until receive a guess from a client
-//		if((recvMsgSize = recvfrom(clientSock, clientBuffer, MAXLINE, 0,
-//				(struct sockaddr *) &clientAddress, &clientAddressLen)) < 0) {
-//			quit("could not receive client request - recvfrom() failed");
-//		}
+		if((recvMsgSize = recvfrom(clientSock, clientBuffer, MAXLINE, 0,
+				(struct sockaddr *) &clientAddress, &clientAddressLen)) < 0) {
+			quit("could not receive client request - recvfrom() failed");
+		}
 
-		memcpy(clientBuffer + strlen(clientBuffer), test[x].c_str(), strlen(test[x].c_str()) + x);  
-		recvMsgSize = strlen(test[x].c_str()) + x;
+//		memcpy(clientBuffer + strlen(clientBuffer), test[x].c_str(), strlen(test[x].c_str()) + x);  
+//		recvMsgSize = strlen(test[x].c_str()) + x;
 
 		ret.reserve(ret.size() + recvMsgSize);
 
