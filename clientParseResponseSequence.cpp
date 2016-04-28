@@ -495,9 +495,10 @@ void parseResponseSequenceTest(int numCommands)
 	string finalMessage = extractMessage(responses[commandIndex]);
 	DEBUG("finalMessage = {" << finalMessage << "}!!! " << finalMessage.size() << "\n");
 	elaborateString(finalMessage);
-*/
+
 	return;
 }
+*/
 
 
 

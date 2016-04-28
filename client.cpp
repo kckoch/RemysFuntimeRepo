@@ -35,8 +35,6 @@ const double DATA_TIMEOUT = 5.0;
 // Returns length of string added
 void addToMessage(string &message, const char *add)
 {
-	DEBUG2("ADDING TO MESSAGE: {%s}\n", add);
-	DEBUG2("MESSAGE BEFORE: {%s}\n", message.c_str());
 	int addLen = strlen(add);
 	message += addLen;
 	for(int i = 0; i < addLen; i++)
@@ -100,7 +98,7 @@ void sendCommandSequence(int numSides, int clockwise, int length)
 	}
 	
 	buffer += '\0'; // Null-terminate the data
-	DEBUG2("client.c buffer = %s\n", buffer.c_str());
+//	DEBUG2("client.c buffer = %s\n", buffer.c_str());
 
 	free(turnRequest);
 	free(moveRequest);
