@@ -44,15 +44,6 @@ void addToMessage(string &message, const char *add)
 		message += add[i];
 	}
 	return;
-/*	message[0] = addLen;
-	strcpy(message+1, add);
-//	DEBUG2("MESSAGE AFTER: {%s}\n", message);
-//	DEBUG2("MESSAGE %i -> ", *message);
-	message += addLen;
-//	DEBUG2("%i\n", *message);
-
-	return addLen + 1;
-*/
 }
 
 void writeGetSnapshot(string &buffer)
@@ -79,12 +70,7 @@ void sendCommandSequence(int numSides, int clockwise, int length)
 	int turnRequestLen = strlen(turnRequest);
 	int moveRequestLen = strlen(moveRequest);
 
-//	DEBUG2("turnRequest = %s\n", turnRequest);
-//	DEBUG1("turnRequest != LOL\n");
-//	DEBUG2("turnRequestLen = %i\n", turnRequestLen);
-
 	DEBUG2("moveRequest = %s\n", moveRequest);
-//	DEBUG1("turnRequest != LOL\n");
 	DEBUG2("moveRequestLen = %i\n", moveRequestLen);
 
 
@@ -95,14 +81,13 @@ void sendCommandSequence(int numSides, int clockwise, int length)
 			34 /* intiial getSnapshot() */ + (numSides * (48 + turnRequestLen)) /* number of sides * length of commands per side */ + 1 /* null terminator */; // Number of bytes in commands
 	string buffer;
 	buffer.reserve(bufferLen);
-//	char *buffer = (char *) malloc(bufferLen);
-//	char *writer = buffer;
+
 
 	DEBUG2("BUFFERLEN = %i\n", bufferLen);
 
 	int i;
 
-	// First iteration - N sides, clockwise
+	// N sides, clockwise
 	// Write initial getSnapshot() equivalent
 	writeGetSnapshot(buffer);
 	for(i = 0; i < numSides;i++)
@@ -114,45 +99,17 @@ void sendCommandSequence(int numSides, int clockwise, int length)
 		addToMessage(buffer, "STOP");
 	}
 	
-	// Second iteration - N-1 sides, counterclockwise
-	// IN THE FINAL RELEASE, THIS WILL NOT OCCUR HERE - IT WILL OCCUR IN A SEPARATE PACKET
-/*
-	// Write initial getSnapshot() equivalent
-	writeGetSnapshot(buffer);
-	for(i = 0; i < numSides;i++)
-	{
-		addToMessage(buffer, moveRequest);
-		addToMessage(buffer, "STOP");
-		writeGetSnapshot(buffer);
-		addToMessage(buffer, turnRequest);
-		addToMessage(buffer, "STOP");
-	}
-*/	
-
-
-
 	buffer += '\0'; // Null-terminate the data
 	DEBUG2("client.c buffer = %s\n", buffer.c_str());
-	
-	
-//	DEBUG3("bufferLength = %i/%i\n", bufferLen, RESPONSE_MESSAGE_SIZE);
-//	int segments = bufferLen / RESPONSE_MESSAGE_SIZE + 1;
-//	DEBUG2("Segments = %i\n", segments);
 
 	free(turnRequest);
 	free(moveRequest);
 	
-	// Garbage variables for last 2
+	// Send request
 	char *cStr = (char *)malloc(buffer.size());
 	memcpy(cStr, buffer.c_str(), buffer.size());
-	sendRequestNoResponse(cStr /*, &turnRequestLen, 5.0 */);
+	sendRequestNoResponse(cStr);
 	free(cStr);
-
-	
-
-	//parseResponseSequence(numCommands);
-
-	
 }
 
 void tracePolygon(int numSides, bool clockwise) {
@@ -315,11 +272,6 @@ double getTime() {
 
 int main(int argc, char** argv) {
 
-//	DEBUG1("SKIPPING STRAIGHT TO PARSING\n");
-//	parseResponseSequenceTest(4 + (8 /* numsides */  * 8));
-//	exit(-1);
-
-///
 	//get command line args
 	if(argc != 6) {
 		fprintf(stderr, "Usage: %s <server IP or server host name> <server port> <robot ID> <L> <N>\n", argv[0]);
@@ -350,27 +302,11 @@ int main(int argc, char** argv) {
 
 #if USE_NEW_METHOD == 1
 	{
-/*
-		// Clear initial position and image files
-		// (information will be appended to these later)
-		for(int i = 0; i < ((2*N) + 1); i++)
-		{
-			char fileName[15] = "";
-			sprintf(fileName, "image-%d.jpg", i);
-			ofstream clear(fileName);
-			clear.close();
-			sprintf(fileName, "position-%d.txt", i);
-			clear.open(fileName);
-			clear.close();
-		}
-*/
 		sendCommandSequence(N, true, L);
 		parseResponseSequence(N, true);
 
 		sendCommandSequence(N-1, false, L);
 		parseResponseSequence(N-1, false);
-
-
 	}
 #else
 	{

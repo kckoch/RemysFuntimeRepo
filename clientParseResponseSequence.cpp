@@ -240,29 +240,6 @@ void handleGPS(const string &message, int commandIndex)
 {
 	DEBUG("HANDLEGPS START");
 	writePositionData("GPS ", message, commandIndex);
-
-/*
-	int sideNumber = getSideNumber(commandIndex);
-
-	char name[15];
-	sprintf(&name[0], "position-%d.txt", sideNumber);
-
-	DEBUG(" - " << name << endl);
-
-	// If this is the first time writing to this position file, 
-	// clear the contents of the file
-	if(!positionFileWritten[sideNumber])
-	{
-		ofstream clear(name);
-		positionFileWritten[sideNumber] = true;
-		clear.close();
-	}
-
-	ofstream out(name, ofstream::app);
-	appendToFile(out, "GPS ");
-	appendToFile(out, message);
-	out << '\n';
-*/
 }
 
 // Open an appropriately-named file, and append DGPS information to it
@@ -270,18 +247,6 @@ void handleDGPS(const string &message, int commandIndex)
 {
 	DEBUG("HANDLEDGPS START");
 	writePositionData("DGPS ", message, commandIndex);
-
-/*
-	char name[15];
-	sprintf(&name[0], "position-%d.txt", getSideNumber(commandIndex));
-
-//	DEBUG(" - " << name << endl);
-
-	ofstream out(name, ofstream::app);
-	appendToFile(out, "DGPS ");
-	appendToFile(out, message);
-	out << '\n';
-*/
 }
 
 // Open an appropriately-named file, and append laser information to it
@@ -289,29 +254,11 @@ void handleLasers(const string &message, int commandIndex)
 {
 	DEBUG("HANDLELASERS START");
 	writePositionData("LASERS ", message, commandIndex);
-
-/*
-	char name[15];
-	sprintf(&name[0], "position-%d.txt", getSideNumber(commandIndex));
-
-//	DEBUG(" - " << name << endl);
-
-	ofstream out(name, ofstream::app);
-	appendToFile(out, "LASERS ");
-	appendToFile(out, message);
-	out << '\n';
-*/
 }
 
 void handleResponse(int commandIndex)
 {
 	const string response = extractMessage(responses[commandIndex]);
-//	DEBUG("Handling response [" << commandIndex << "] (" << response.size() << ") {");
-//	for(int i = 0; i < response.size(); i++)
-//	{
-//		cout << response[i];
-//	}
-//	cout << endl;
 
 	// Requests sent always take the following order:
 	//
@@ -380,28 +327,7 @@ void parseResponseSequence(int numSidesNEW, bool clockwise)
 	numSides = numSidesNEW;
 	int numCommands = 4 + (numSides * 8);
 	firstLoop = clockwise;
-
-/*
-// Test handleX() functions
-///
-	handleGPS("GPS DATA LOL", 5);
-	handleDGPS("DGPS DATA LOL", 6);
-	handleLasers("LASER DATA LOL", 7);
-	handleGPS("GPS DATA LOL", 5);
-	handleGPS("GPS DATA LOL", 5);
-	handleGPS("GPS DATA LOL", 5);
-
-	string imageLol;
-	imageLol += '\6';
-	imageLol += "12345 ";
-	imageLol += '\0';
-	imageLol += 254;
-	imageLol += '\0';
-	imageLol += '\6';
-	addToString(imageLol, "IMAGE LOL");
-	handleImage(imageLol, 88);
-///
-*/	
+	
 	// While there are unanswered commands
 	while(numCommands > 0)
 	{
@@ -458,6 +384,7 @@ void parseResponseSequence(int numSidesNEW, bool clockwise)
 	return;
 }
 
+/*
 // Receive all transmissions from the server
 // Sort them into appropriate response buffers
 // Parse the data from the response buffers when applicable

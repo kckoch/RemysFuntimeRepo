@@ -46,11 +46,7 @@ void addToString(string &message, string &add)
 // Algorithm and supporting functions written by TJ Wills
 string receiveEntireMessage(int &clientSock)
 {
-//	DEBUG("RECEIVE ENTIRE MESSAGE START\n");
 	string ret;
-
-//	int x = 0;
-//	string test[2] = {"1", "2"};
 
 	do
 	{
@@ -67,9 +63,6 @@ string receiveEntireMessage(int &clientSock)
 			quit("could not receive client request - recvfrom() failed");
 		}
 
-//		memcpy(clientBuffer + strlen(clientBuffer), test[x].c_str(), strlen(test[x].c_str()) + x);  
-//		recvMsgSize = strlen(test[x].c_str()) + x;
-
 		ret.reserve(ret.size() + recvMsgSize);
 
 		// Append received message into return string
@@ -78,17 +71,9 @@ string receiveEntireMessage(int &clientSock)
 			ret += clientBuffer[i];
 		}
 
-//	DEBUG("ret so far = " << ret << "\n");
-//	x++;
 	} while(ret[ret.size() - 1] != '\0');
 
-/*
-	DEBUG("RETURNING (" << ret.size() << ") {" << ret << "}\n");
-	for(int i = 0; i < ret.size(); i++)
-	{
-		cout << "(" << i << ") " << (int) (unsigned char) ret[i] << " | " << ret[i] << endl;
-	}
-*/
+
 	return ret;
 }
 

@@ -78,10 +78,7 @@ static uint32_t ID = 0;
 
 // Algorithm and supporting functions written by TJ Wills
 void sendRequestNoResponse(char* requestString /*, int* responseLength, double timeout */) {
-/*
-	//4 bytes for ID + robotID length + 1 byte for null char + 8 bytes for indexing information + requestString length + 1 byte for null char
-	int requestLen = 4+strlen(robotID)+1+8+strlen(requestString)+1;
-*/
+
 	//4 bytes for ID + robotID length + 1 byte for null char + 8 bytes for indexing information
 	int headLen = 4+strlen(robotID)+1+8;
 	DEBUG3("headLen = %i/%i\n", headLen, RESPONSE_MESSAGE_SIZE);
@@ -90,8 +87,6 @@ void sendRequestNoResponse(char* requestString /*, int* responseLength, double t
 	DEBUG2("segmentCount = %i\n", segmentCount);
 	////
 
-	
-//	void* request;
 	int next;
 	int numBytesSent;
 	int segment;
@@ -101,64 +96,45 @@ void sendRequestNoResponse(char* requestString /*, int* responseLength, double t
 
 	int informationLeft = strlen(requestString) + 1; // +1 includes null terminator
 	DEBUG2("InformationLeft = %i\n", informationLeft);
+
 	// segmentCount is 0-based, so if there is 1 segment, segmentCount == 0
 	for(segment = 0; segment <= segmentCount; segment++)
 	{
-		DEBUG3("SEGMENT %i/%i\n", segment, segmentCount);
 		next = 0;
 		packetLen = MIN(maxPayload, informationLeft);
 		requestLen = packetLen + headLen;
-DEBUG2("REQUESTING %i\n", requestLen);
 		
 		string request;
 		request.reserve(requestLen);
-DEBUG1("LOL\n");
-//		request = malloc(requestLen);
-DEBUG3("SEGMENT %i/%i\n", segment, segmentCount);
 	
 		char temp[4];
-		//insert IDk
+		//insert ID
 		*((uint32_t*) (void *) &(temp[0])) = htonl(ID);
 		addToString(request, &temp[0], 4);
-//		*((uint32_t*) (void *) (request[next])) = htonl(ID);
 		next += sizeof(ID);
 
 	
 		//insert robotID string
 		addToString(request, robotID, strlen(robotID)+1);
-//		memcpy((&(temp[0]]), robotID, strlen(robotID)+1);
-//		memcpy(((char*)request[next]), robotID, strlen(robotID)+1);
 		next += strlen(robotID)+1;
 
 		//insert # messages
 		memcpy(&(temp[0]), &segmentCount, sizeof(int));
 		addToString(request, temp, sizeof(int));
-//		memcpy(((char*)request[next]), &segmentCount, sizeof(int));
 		next += sizeof(int);
 
 		//insert current message index
 		memcpy(&(temp[0]), &segment, sizeof(int));
 		addToString(request, temp, sizeof(int));
-//		memcpy(((char*)request[next]), &segment, sizeof(int));
+
 		next += sizeof(int);
 
 
 		//insert request string segment
 		addToString(request, writer, packetLen);
 		DEBUG2("PACKELEN WROTE = %i\n", packetLen);
-//		memcpy(((char*)request[next]), writer, packetLen);
 		next += packetLen;
 		writer += packetLen;
-
-DEBUG1("PRINTING VARIABLES\n");
-int Y;
-for(Y = 0; Y < (requestLen); Y++)
-{
-	DEBUG3("> %i | %c \n", (int) (unsigned char) request[Y], request[Y] );
-}
-DEBUG2("%i\n", requestLen);
-
-
 	
 		//send request
 		numBytesSent = send(sock, request.c_str(), packetLen, 0);
@@ -167,7 +143,6 @@ DEBUG2("%i\n", requestLen);
 		else if(numBytesSent != packetLen)
 			quit("send() didn't send the whole request");
 
-//		free(request);
 		informationLeft -= maxPayload;
 	}
 	return;
