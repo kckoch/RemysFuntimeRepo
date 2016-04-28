@@ -120,6 +120,7 @@ void sendRequestNoResponse(char* requestString /*, int* responseLength, double t
 
 		//insert # messages
 		memcpy(&(temp[0]), &segmentCount, sizeof(int));
+		DEBUG2("Messages = %i\n", segmentCount);
 		addToString(request, temp, sizeof(int));
 		next += sizeof(int);
 

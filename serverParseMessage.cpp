@@ -16,6 +16,7 @@
 #include <signal.h>
 
 #include <string>
+#include "server.cpp"
 #include "string"
 
 #define MAXLINE 1000
@@ -60,10 +61,46 @@ void getImage()
 	
 }
 
-void getGPS()
+void getGPS(char* robotAddress, char* robotID, char* requestStr)
 {
 	DEBUG("getGPS() START\n");
-	
+	char* portForRequestStr = "8082"
+	int robotSock;
+	//TODO: Just put this at the end of the parse loop prob
+	//Send HTTP request to robot
+	if((robotSock = setupClientSocket(robotAddress, robotPort, SOCKET_TYPE_TCP)) < 0) {
+            quit("could not connect to robot");
+        } 
+	char* httpRequest = generateHTTPRequest(robotAddress, robotID, requestStr, portForRequestStr);
+
+	if(write(robotSock, httpRequest, strlen(httpRequest)) != strlen(httpRequest)) {
+            quit("could not send http request to robot - write() failed");
+        }
+
+	free(httpRequest);
+	//recieve response from robot
+	int pos = 0;
+        char* httpResponse = (char *) malloc(MAXLINE);
+        int n;
+        char recvLine[MAXLINE+1]; //holds one chunk of read data at a time
+        while((n = read(robotSock, recvLine, MAXLINE)) > 0) {
+            memcpy(httpResponse+pos, recvLine, n);
+            pos += n;
+            httpResponse = (char *) realloc(httpResponse, pos+MAXLINE);
+        }
+
+	//Parse Response from Robot
+        char* httpBody = strstr(httpResponse, "\r\n\r\n")+4;
+        int httpBodyLength = (httpResponse+pos)-httpBody;
+
+	//Send response back to the UDP client
+        uint32_t requestID = getRequestID(clientBuffer);
+        sendResponse(clientSock, &clientAddress, clientAddressLen, requestID, httpBody, httpBodyLength);
+        
+		cout << "DAMMMMMNNNNNNN WORKED" << endl;       
+ 
+        free(httpResponse);
+
 }
 
 void getDGPS()
@@ -97,17 +134,17 @@ void turn(float &velocity, float &degrees)
 }
 
 // Perform each command from message and send an appropriate response to the client
-void parseMessage(string &message, int &clientSock, struct sockaddr_in &localAddress)
+void parseMessage(char* robotAddress, char* robotID, string &message, int &clientSock, struct sockaddr_in &localAddress)
 {
 	int position = 0;
 	do
 	{
-//		cout << position << " | " << (unsigned int) (char) message[position] << " | " << message[position];
+		cout << position << " | " << (unsigned int) (char) message[position] << " | " << message[position];
 		string command = getNextCommand(message, position);
 
 		string sub = command.substr(0, 4);
 
-//		cout << "command = " << command << endl;
+		cout << "command = " << command << endl << sub << endl;
 
 		// Handle our getSnapshot() requests
 		if(sub == "GET ")
@@ -121,7 +158,7 @@ void parseMessage(string &message, int &clientSock, struct sockaddr_in &localAdd
 			else if(command == "GET GPS")
 			{
 				DEBUG("HANDLING GET GPS\n");
-				getGPS();
+				getGPS(robotAddress, robotID, sub);
 
 			}
 			else if(command == "GET DGPS")
