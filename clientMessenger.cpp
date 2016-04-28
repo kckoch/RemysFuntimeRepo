@@ -39,6 +39,7 @@ void* recvMessage(int ID, int* messageLength);
 int extractMessageID(void* message);
 int extractNumMessages(void* message);
 int extractSequenceNum(void* message);
+void printBytes(const char* string, int bytes);
 
 void setupMessenger(char* serverHost, char* serverPort, char* _robotID) {
 	assert(serverHost != NULL);
@@ -74,16 +75,15 @@ void addToString(string &str, const char *add, int size)
 	Return pointer to response data
 */
 
-static uint32_t ID = 0;
+static uint32_t ID = 2851;
 
 // Algorithm and supporting functions written by TJ Wills
 void sendRequestNoResponse(char* requestString /*, int* responseLength, double timeout */) {
-
 	//4 bytes for ID + robotID length + 1 byte for null char + 8 bytes for indexing information
 	int headLen = 4+strlen(robotID)+1+8;
 	DEBUG3("headLen = %i/%i\n", headLen, RESPONSE_MESSAGE_SIZE);
 	int maxPayload = RESPONSE_MESSAGE_SIZE - headLen;
-	int segmentCount = ((strlen(requestString) + 1) / maxPayload); // +1 includes null-terminator
+	uint32_t segmentCount = ((strlen(requestString) + 1) / maxPayload); // +1 includes null-terminator
 	DEBUG2("segmentCount = %i\n", segmentCount);
 	////
 
@@ -107,28 +107,26 @@ void sendRequestNoResponse(char* requestString /*, int* responseLength, double t
 		string request;
 		request.reserve(requestLen);
 	
-		char temp[4];
+		char* temp = (char*) malloc(4);
 		//insert ID
-		*((uint32_t*) (void *) &(temp[0])) = htonl(ID);
+		*(uint32_t*)temp = htonl(ID);
 		addToString(request, &temp[0], 4);
-		next += sizeof(ID);
+		next += 4;
 
-	
+		//insert # of messages
+		DEBUG2("Messages = %i\n", segmentCount);
+		*(uint32_t*)temp = htonl(segmentCount);
+		addToString(request, temp, sizeof(int));
+		next += 4;
+
+		//insert current message index
+		*(uint32_t*)temp = htonl(segment);
+		addToString(request, temp, sizeof(int));
+		next += 4;
+
 		//insert robotID string
 		addToString(request, robotID, strlen(robotID)+1);
 		next += strlen(robotID)+1;
-
-		//insert # messages
-		memcpy(&(temp[0]), &segmentCount, sizeof(int));
-		DEBUG2("Messages = %i\n", segmentCount);
-		addToString(request, temp, sizeof(int));
-		next += sizeof(int);
-
-		//insert current message index
-		memcpy(&(temp[0]), &segment, sizeof(int));
-		addToString(request, temp, sizeof(int));
-
-		next += sizeof(int);
 
 
 		//insert request string segment
@@ -139,6 +137,8 @@ void sendRequestNoResponse(char* requestString /*, int* responseLength, double t
 	
 		//send request
 		numBytesSent = send(sock, request.c_str(), packetLen, 0);
+		printf("\nsent::\n");
+		printBytes(request.c_str(), numBytesSent);
 		if(numBytesSent < 0)
 			quit("could not send request - send() failed");
 		else if(numBytesSent != packetLen)
@@ -386,4 +386,12 @@ void* recvMessage(int ID, int* messageLength) {
 		}
 		plog("Received invalid response");
 	}
+}
+
+void printBytes(const char* string, int bytes) {
+    int i;
+    for (i = 0; i < bytes; i++) {
+        if (!(i % 8)) printf("\n");
+        printf("%.2X ", *(string + i) & 0xff);
+    }
 }
