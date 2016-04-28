@@ -54,6 +54,8 @@ extern int sock;
 
 static uint32_t ID;
 
+bool firstLoop = false;
+int numSides = 0;
 
 vector<vector <string> > responses;
 
@@ -181,10 +183,14 @@ void appendToFile(ofstream &out, const string &message)
 // 12-19 = side 2
 // 20-27 = side 3
 // etc
+// If it's the second loop, add (numsides + 1) to the return value to compensate for the first loop
 int getSideNumber(int commandIndex)
 {
 	DEBUG("GETSIDENUMBER " << commandIndex << " | " << commandIndex + 4 << " | " << (commandIndex + 4) / 8 << endl);
-	return ( (commandIndex + 4) / 8);
+	if(firstLoop)
+		return ( (commandIndex + 4) / 8);
+	else
+		return ( ( (commandIndex + 4) / 8) + numSides + 1 );
 }
 
 // Decompress the information stored in message,
@@ -193,7 +199,7 @@ void handleImage(const string &message, int commandIndex)
 {
 	DEBUG("HANDLEIMAGE START");
 
-	char name[12];
+	char name[15];
 	sprintf(&name[0], "image-%d.jpg", getSideNumber(commandIndex));
 
 	string imageString = decodeMessage(message);
@@ -295,6 +301,7 @@ void handleResponse(int commandIndex)
 		handleGPS(response, commandIndex);
 	}
 	else if(commandCode == DGPS)
+	{
 		DEBUG("HANDLING DGPS\n");
 		handleDGPS(response, commandIndex);
 	}
@@ -305,7 +312,7 @@ void handleResponse(int commandIndex)
 	}
 	else
 	{
-		DEBUG("UNKNOWN CODE " << commandCode << " | " << commandIndex << "/8\n");
+		DEBUG("UNKNOWN CODE " << commandCode << " = " << commandIndex << "%8\n");
 	}
 	
 }
@@ -314,9 +321,13 @@ void handleResponse(int commandIndex)
 // Sort them into appropriate response buffers
 // Parse the data from the response buffers when applicable
 // Return when "numCommands" commands have successfully been completed and parsed
-void parseResponseSequence(int numCommands)
+void parseResponseSequence(int numSidesNEW, bool clockwise)
 {
 	DEBUG1("PARSERESPONSESEQUENCE START\n");
+
+	numSides = numSidesNEW;
+	int numCommands = 4 + (numSides * 8);
+	firstLoop = clockwise;
 	
 	// While there are unanswered commands
 	while(numCommands > 0)
@@ -360,6 +371,7 @@ void parseResponseSequence(int numCommands)
 		if(isVectorFull(responses[commandIndex]))
 		{
 			handleResponse(commandIndex);
+			responses[commandIndex].clear(); // Free this vector after we're done with it
 			numCommands--; // Decrement reamining commands
 		}
 		else
@@ -379,6 +391,7 @@ void parseResponseSequence(int numCommands)
 void parseResponseSequenceTest(int numCommands)
 {
 	DEBUG1("PARSERESPONSESEQUENCETEST START\n");
+	DEBUG1("@!@!@!@ THIS FUNCTION WILL NOT WORK, BECAUSE THE LOGIC HAS BEEN CHANGED TO REQUIRE SETTING SOME GLOBAL VARIABLES\n");
 	
 	
 

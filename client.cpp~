@@ -10,6 +10,7 @@
 #include <math.h>
 #include <string.h>
 #include "string"
+#include <fstream>
 
 #include "clientParseResponseSequence.cpp"
 
@@ -148,7 +149,7 @@ void sendCommandSequence(int numSides, int clockwise, int length)
 
 	
 
-	parseResponseSequence(numCommands);
+	//parseResponseSequence(numCommands);
 
 	
 }
@@ -312,10 +313,12 @@ double getTime() {
 }
 
 int main(int argc, char** argv) {
-	DEBUG1("SKIPPING STRAIGHT TO PARSING\n");
-	parseResponseSequenceTest(4 + (8 /* numsides */  * 8));
-	exit(-1);
 
+//	DEBUG1("SKIPPING STRAIGHT TO PARSING\n");
+//	parseResponseSequenceTest(4 + (8 /* numsides */  * 8));
+//	exit(-1);
+
+///
 	//get command line args
 	if(argc != 6) {
 		fprintf(stderr, "Usage: %s <server IP or server host name> <server port> <robot ID> <L> <N>\n", argv[0]);
@@ -347,12 +350,24 @@ int main(int argc, char** argv) {
 #if USE_NEW_METHOD == 1
 	{
 
+		// Clear initial position and image files
+		// (information will be appended to these later)
+		for(int i = 0; i < ((2*N) + 1); i++)
+		{
+			char fileName[15] = "";
+			sprintf(fileName, "image-%d.jpg", i);
+			ofstream clear(fileName);
+			clear.close();
+			sprintf(fileName, "position-%d.txt", i);
+			clear.open(fileName);
+			clear.close();
+		}
 
 		sendCommandSequence(N, true, L);
-		parseResponseSequence();
+		parseResponseSequence(N, true);
 
 		sendCommandSequence(N-1, false, L);
-		parseResponseSequence();
+		parseResponseSequence(N-1, false);
 
 
 	}
