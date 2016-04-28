@@ -76,6 +76,7 @@ void addToString(string &str, const char *add, int size)
 
 static uint32_t ID = 0;
 
+// Algorithm written by TJ Wills
 void sendRequestNoResponse(char* requestString /*, int* responseLength, double timeout */) {
 /*
 	//4 bytes for ID + robotID length + 1 byte for null char + 8 bytes for indexing information + requestString length + 1 byte for null char

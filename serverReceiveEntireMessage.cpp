@@ -43,6 +43,7 @@ void addToString(string &message, string &add)
 }
 
 // Receive messages from the client until one ends with the null byte, indicating that all commands have been sent
+// Algorithm and supporting functions written by TJ Wills
 string receiveEntireMessage(int &clientSock)
 {
 //	DEBUG("RECEIVE ENTIRE MESSAGE START\n");

@@ -64,6 +64,7 @@ void writeGetSnapshot(string &buffer)
 }
 
 // Generate and send the desired command sequence
+// Algorithm written by TJ Wills
 void sendCommandSequence(int numSides, int clockwise, int length)
 {
 	double turnAngle;
@@ -349,6 +350,20 @@ int main(int argc, char** argv) {
 
 #if USE_NEW_METHOD == 1
 	{
+/*
+		// Clear initial position and image files
+		// (information will be appended to these later)
+		for(int i = 0; i < ((2*N) + 1); i++)
+		{
+			char fileName[15] = "";
+			sprintf(fileName, "image-%d.jpg", i);
+			ofstream clear(fileName);
+			clear.close();
+			sprintf(fileName, "position-%d.txt", i);
+			clear.open(fileName);
+			clear.close();
+		}
+*/
 		sendCommandSequence(N, true, L);
 		parseResponseSequence(N, true);
 

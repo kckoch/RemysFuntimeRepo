@@ -64,6 +64,7 @@ void writeGetSnapshot(string &buffer)
 }
 
 // Generate and send the desired command sequence
+// Algorithm and supporting functions written by TJ Wills
 void sendCommandSequence(int numSides, int clockwise, int length)
 {
 	double turnAngle;

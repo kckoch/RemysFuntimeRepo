@@ -381,7 +381,7 @@ void parseResponseSequence(int numSidesNEW, bool clockwise)
 	firstLoop = clockwise;
 
 /*
-// Test handle functions
+// Test handleX() functions
 ///
 	handleGPS("GPS DATA LOL", 5);
 	handleDGPS("DGPS DATA LOL", 6);

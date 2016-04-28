@@ -366,6 +366,7 @@ void handleResponse(int commandIndex)
 // Sort them into appropriate response buffers
 // Parse the data from the response buffers when applicable
 // Return when "numCommands" commands have successfully been completed and parsed
+// Algorithm and supporting functions written by TJ Wills
 void parseResponseSequence(int numSidesNEW, bool clockwise)
 {
 	DEBUG1("PARSERESPONSESEQUENCE START\n");
