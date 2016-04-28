@@ -33,6 +33,15 @@ char* generateHTTPRequest(char* robotAddress, char* robotID, char* requestStr, c
 char* getRobotPortForRequestStr(char* requestStr);
 void flushBuffersAndExit(int x);
 
+void printBytes(const char* string, int bytes) {
+    int i;
+    for (i = 0; i < bytes; i++) {
+        if (!(i % 8)) printf("\n");
+        printf("%.2X ", *(string + i) & 0xff);
+    }
+}
+
+
 // Appends the specied string to message, including null bytes
 void addToString(string &message, string &add)
 {
@@ -48,7 +57,7 @@ string receiveEntireMessage(int &clientSock)
 {
 	string ret;
 
-	do
+//	do
 	{
 		//Receive request from client
 		struct sockaddr_in clientAddress;
@@ -62,6 +71,11 @@ string receiveEntireMessage(int &clientSock)
 				(struct sockaddr *) &clientAddress, &clientAddressLen)) < 0) {
 			quit("could not receive client request - recvfrom() failed");
 		}
+		cout << endl << recvMsgSize << endl;
+	
+		printBytes(clientBuffer, recvMsgSize);
+
+		cout << endl << endl << endl;
 
 		ret.reserve(ret.size() + recvMsgSize);
 
@@ -71,9 +85,11 @@ string receiveEntireMessage(int &clientSock)
 			ret += clientBuffer[i];
 		}
 
-	} while(ret[ret.size() - 1] != '\0');
+		printBytes(ret.c_str(), ret.length());
 
+	} //while(ret[ret.size() - 1] != '\0');
 
+	cout << endl << "I SAID HEYYYY RECIEVING HOLIDAYS" << endl;
 	return ret;
 }
 

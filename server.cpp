@@ -14,6 +14,8 @@
 #include <unistd.h>     /* for close() */
 #include <time.h>       /* for time() */
 #include <signal.h>
+#include <math.h>
+#include <sys/time.h>
 
 #include "string"
 
@@ -32,6 +34,7 @@ char* generateHTTPRequest(char* robotAddress, char* robotID, char* requestStr, c
 char* getRobotPortForRequestStr(char* requestStr);
 void flushBuffersAndExit(int x);
 string getNextCommand(string message, int &position);
+double getTime();
 
 //Main Method
 int main(int argc, char *argv[])
@@ -81,10 +84,43 @@ int main(int argc, char *argv[])
 //		struct sockaddr_in clientAddress;
 
 		// commented out to test pareMessage
-//		string received = receiveEntireMessage(clientSock);
-		string received = "\14MOVE 1.2 3.4\4STOP\11GET IMAGE\7GET GPS\10GET DGPS\12GET LASERS\14TURN 1.2 3.4\4STOP\10not real";
+		string received = receiveEntireMessage(clientSock);
+//		string received = "\14MOVE 1.2 3.4\4STOP\11GET IMAGE\7GET GPS\10GET DGPS\12GET LASERS\14TURN 1.2 3.4\4STOP\10not real";
 		received += '\0';
+		printBytes(received.c_str(), received.length());		
+		cout << endl << received << endl;
 
+		char const *temp = received.c_str();		
+	
+		//get ID
+		unsigned int ID = ntohl(*(uint32_t*)temp);
+		
+		//printBytes(temp, 8);
+
+		//get number of messages
+		temp += 4;
+		unsigned int numMessages = ntohl(*(uint32_t*)temp);
+		
+		//get message index
+		temp += 4;
+		unsigned int mesIndex = ntohl(*(uint32_t*)temp);
+	
+		//get RobotID
+		temp+=4;
+		char *RobotIDstr = new char[988];
+		strcpy(RobotIDstr, temp);
+		int RobotID = atoi(RobotIDstr);	
+
+		cout << "ID: " << ID << " numMessages: " << numMessages << " mesIndex: " << mesIndex << " RobID: " << RobotID << endl;
+
+/*
+		unsigned int IDnumber = ntohl((ID[0] << 24) | (ID[1] << 16) | (ID[2] << 8) | ID[3]);
+		cout << "IDNUMBER: " << IDnumber << endl; 
+	
+		strncpy(ID, &received[4], 4);
+		IDnumber = ntohl((ID[0] << 24) | (ID[1] << 16) | (ID[2] << 8) | ID[3]);
+        cout << "IDNUMBER: " << IDnumber << endl;
+*/	
 /*		//Receive request from client
 		struct sockaddr_in clientAddress;
 unsigned int clientAddressLen = sizeof(clientAddress);	//in-out parameter
@@ -136,8 +172,10 @@ unsigned int clientAddressLen = sizeof(clientAddress);	//in-out parameter
 		do {
 			//get current command 
 			string command = getNextCommand(received, position);
-	
-			cout << "command string: " << command << endl;
+			string sub = command.substr(0, 4);
+			
+
+			cout << "command string: " << command << " first 4: " << sub << endl;
 			char* robotPort = getRobotPortForRequestStr(&command[0u]);
 			
 			//Send HTTP request to robot
@@ -155,16 +193,43 @@ unsigned int clientAddressLen = sizeof(clientAddress);	//in-out parameter
 
 			plog("Created http request: %s", httpRequest);
 			
+			double timeSpent = getTime();
 			if(write(robotSock, httpRequest, strlen(httpRequest)) != strlen(httpRequest)) {
 				quit("could not send http request to robot - write() failed");
 			}
-			
+			timeSpent = getTime() - timeSpent;
 			plog("Sent http request to robot");
 			
 			free(httpRequest);
 			
 			plog("freed http request");
 	
+			//Waits for robot on certain commands
+			double sleepTime; 
+			int waitSeconds, waitUSeconds;
+			if (sub == "MOVE") {
+				if (lengthOrDegrees > timeSpent) {
+					sleepTime = lengthOrDegrees - timeSpent;
+					waitSeconds = (int) sleepTime;
+					sleepTime -= waitSeconds;
+					waitUSeconds = (int) (sleepTime*1000000);
+					sleep(waitSeconds);
+					usleep(waitUSeconds);
+				}
+			}
+			else if (sub == "TURN") {
+				const double actualSpeed = .89*M_PI/4;
+				if(lengthOrDegrees/actualSpeed > timeSpent) {
+					sleepTime = lengthOrDegrees/actualSpeed - timeSpent;
+        			waitSeconds = (int) sleepTime;
+         			sleepTime -= waitSeconds;
+         			waitUSeconds = (int) (sleepTime*1000000);
+         			//Wait until robot turns to correct orientation.
+         			sleep(waitSeconds);
+         			usleep(waitUSeconds);
+      			}	
+			}
+
 			//Read response from Robot
 			int pos = 0;
 			char* httpResponse = (char *) malloc(MAXLINE);
@@ -194,10 +259,11 @@ unsigned int clientAddressLen = sizeof(clientAddress);	//in-out parameter
 			for(j = 0; j < httpBodyLength; j++)
 				fprintf(stderr, "%c", httpBody[j]);
 			#endif
+
+			
 	
 			//Send response back to the UDP client
-/*			uint32_t requestID = getRequestID(clientBuffer);
-			sendResponse(clientSock, &clientAddress, clientAddressLen, requestID, httpBody, httpBodyLength);
+/*			sendResponse(clientSock, &clientAddress, clientAddressLen, ID, httpBody, httpBodyLength);
 		
 			plog("sent http body response to client");
 		
@@ -427,3 +493,9 @@ string getNextCommand(string message, int &position)
     return ret;
 }
 
+double getTime() {
+   struct timeval curTime;
+   (void) gettimeofday(&curTime, (struct timezone *)NULL);
+   return (((((double) curTime.tv_sec) * 10000000.0)
+      + (double) curTime.tv_usec) / 10000000.0);
+}
