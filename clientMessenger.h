@@ -18,6 +18,6 @@ void setupMessenger(char* serverHost, char* serverPort, char* robotID);
 	Return pointer to response data
 */
 void* sendRequest(char* requestString, int* responseLength, double timeout);
-void sendRequestNoResponse(char* requestString, int* responseLength, double timeout);
+void sendRequestNoResponse(char* requestString /*, int* responseLength, double timeout*/);
 
 #endif

@@ -44,7 +44,7 @@ char example2[] = "\0\0\0\0" // Client ID 1
 		"Hell\0, "; // Message
 
 char exampleImage[] = "\0\0\0\0" // Client ID 1
-		"\0\0\0\1" // 2 UDP Messages
+		"\0\0\0\1" // 1 UDP Message
 		"\0\0\0\0" // Message Index 0
 		"\0\0\0\26" // Command index 22 (\26 in octal)
 		; // No message - to be appended later
@@ -56,6 +56,7 @@ static uint32_t ID;
 
 bool firstLoop = false;
 int numSides = 0;
+bool positionFileWritten[17];
 
 vector<vector <string> > responses;
 
@@ -210,27 +211,67 @@ void handleImage(const string &message, int commandIndex)
 	appendToFile(out, imageString);
 }
 
+void writePositionData(const string prepend, const string &message, int commandIndex)
+{
+	int sideNumber = getSideNumber(commandIndex);
+
+	char name[15];
+	sprintf(&name[0], "position-%d.txt", sideNumber);
+
+	DEBUG(" - " << name << endl);
+
+	// If this is the first time writing to this position file, 
+	// clear the contents of the file
+	if(!positionFileWritten[sideNumber])
+	{
+		ofstream clear(name);
+		positionFileWritten[sideNumber] = true;
+		clear.close();
+	}
+
+	ofstream out(name, ofstream::app);
+	appendToFile(out, prepend);
+	appendToFile(out, message);
+	out << '\n';
+}
+
 // Open an appropriately-named file, and append GPS information to it
 void handleGPS(const string &message, int commandIndex)
 {
 	DEBUG("HANDLEGPS START");
+	writePositionData("GPS ", message, commandIndex);
+
+/*
+	int sideNumber = getSideNumber(commandIndex);
 
 	char name[15];
-	sprintf(&name[0], "position-%d.txt", getSideNumber(commandIndex));
+	sprintf(&name[0], "position-%d.txt", sideNumber);
 
 	DEBUG(" - " << name << endl);
+
+	// If this is the first time writing to this position file, 
+	// clear the contents of the file
+	if(!positionFileWritten[sideNumber])
+	{
+		ofstream clear(name);
+		positionFileWritten[sideNumber] = true;
+		clear.close();
+	}
 
 	ofstream out(name, ofstream::app);
 	appendToFile(out, "GPS ");
 	appendToFile(out, message);
 	out << '\n';
+*/
 }
 
 // Open an appropriately-named file, and append DGPS information to it
 void handleDGPS(const string &message, int commandIndex)
 {
 	DEBUG("HANDLEDGPS START");
+	writePositionData("DGPS ", message, commandIndex);
 
+/*
 	char name[15];
 	sprintf(&name[0], "position-%d.txt", getSideNumber(commandIndex));
 
@@ -240,13 +281,16 @@ void handleDGPS(const string &message, int commandIndex)
 	appendToFile(out, "DGPS ");
 	appendToFile(out, message);
 	out << '\n';
+*/
 }
 
 // Open an appropriately-named file, and append laser information to it
 void handleLasers(const string &message, int commandIndex)
 {
 	DEBUG("HANDLELASERS START");
+	writePositionData("LASERS ", message, commandIndex);
 
+/*
 	char name[15];
 	sprintf(&name[0], "position-%d.txt", getSideNumber(commandIndex));
 
@@ -256,6 +300,7 @@ void handleLasers(const string &message, int commandIndex)
 	appendToFile(out, "LASERS ");
 	appendToFile(out, message);
 	out << '\n';
+*/
 }
 
 void handleResponse(int commandIndex)
@@ -325,10 +370,37 @@ void parseResponseSequence(int numSidesNEW, bool clockwise)
 {
 	DEBUG1("PARSERESPONSESEQUENCE START\n");
 
+	// Initialize positionFileWritten to all false
+	for(int i = 0; i < 17; i++)
+	{
+		positionFileWritten[i] = false;
+	}
+
 	numSides = numSidesNEW;
 	int numCommands = 4 + (numSides * 8);
 	firstLoop = clockwise;
-	
+
+/*
+// Test handleX() functions
+///
+	handleGPS("GPS DATA LOL", 5);
+	handleDGPS("DGPS DATA LOL", 6);
+	handleLasers("LASER DATA LOL", 7);
+	handleGPS("GPS DATA LOL", 5);
+	handleGPS("GPS DATA LOL", 5);
+	handleGPS("GPS DATA LOL", 5);
+
+	string imageLol;
+	imageLol += '\6';
+	imageLol += "12345 ";
+	imageLol += '\0';
+	imageLol += 254;
+	imageLol += '\0';
+	imageLol += '\6';
+	addToString(imageLol, "IMAGE LOL");
+	handleImage(imageLol, 88);
+///
+*/	
 	// While there are unanswered commands
 	while(numCommands > 0)
 	{

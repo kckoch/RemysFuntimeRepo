@@ -76,7 +76,7 @@ void addToString(string &str, const char *add, int size)
 
 static uint32_t ID = 0;
 
-void sendRequestNoResponse(char* requestString, int* responseLength, double timeout) {
+void sendRequestNoResponse(char* requestString /*, int* responseLength, double timeout */) {
 /*
 	//4 bytes for ID + robotID length + 1 byte for null char + 8 bytes for indexing information + requestString length + 1 byte for null char
 	int requestLen = 4+strlen(robotID)+1+8+strlen(requestString)+1;
@@ -171,7 +171,7 @@ DEBUG2("%i\n", requestLen);
 	}
 	return;
 		
-	
+/*	
 
 
 	//start timeout timer
@@ -244,6 +244,7 @@ DEBUG2("%i\n", requestLen);
 	plog("Full response length: %d", *responseLength);
 	
 //	return fullResponse;
+*/
 }
 
 
@@ -397,7 +398,7 @@ void* recvMessage(int ID, int* messageLength) {
 	while(true) {
 		int len = recv(sock, message, RESPONSE_MESSAGE_SIZE, 0);
 		if(len <= 0)
-			quit("server doesn't exist or recv() failed");
+			quit("recvMessage - server doesn't exist or recv() failed");
 		if(len < 12)
 			quit("improper server response message -- doesn't include required headers");
 		

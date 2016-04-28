@@ -14,7 +14,7 @@
 
 #include "clientParseResponseSequence.cpp"
 
-#define USE_NEW_METHOD 0
+#define USE_NEW_METHOD 1
 #define DEBUG1(X) fprintf(stderr, X);
 #define DEBUG2(X, Y) fprintf(stderr, X, Y);
 #define DEBUG3(X, Y, Z) fprintf(stderr, X, Y, Z);
@@ -144,7 +144,7 @@ void sendCommandSequence(int numSides, int clockwise, int length)
 	// Garbage variables for last 2
 	char *cStr = (char *)malloc(buffer.size());
 	memcpy(cStr, buffer.c_str(), buffer.size());
-	sendRequestNoResponse(cStr, &turnRequestLen, 5.0);
+	sendRequestNoResponse(cStr /*, &turnRequestLen, 5.0 */);
 	free(cStr);
 
 	
@@ -349,20 +349,6 @@ int main(int argc, char** argv) {
 
 #if USE_NEW_METHOD == 1
 	{
-
-		// Clear initial position and image files
-		// (information will be appended to these later)
-		for(int i = 0; i < ((2*N) + 1); i++)
-		{
-			char fileName[15] = "";
-			sprintf(fileName, "image-%d.jpg", i);
-			ofstream clear(fileName);
-			clear.close();
-			sprintf(fileName, "position-%d.txt", i);
-			clear.open(fileName);
-			clear.close();
-		}
-
 		sendCommandSequence(N, true, L);
 		parseResponseSequence(N, true);
 
