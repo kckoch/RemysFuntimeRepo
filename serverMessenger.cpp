@@ -10,6 +10,11 @@
 #include <unistd.h>     //for close()
 #include <netdb.h>		//for struct sockaddr*
 
+#define IMAGE 2
+#define GPS 3
+#define DGPS 4
+#define LASERS 5
+
 using namespace std;
 
 const int RESPONSE_MESSAGE_SIZE = 1000;
@@ -42,6 +47,9 @@ void sendResponse(int sock, struct sockaddr_in* recipientAddr, int addressSize, 
 		setNumMessages(messages[i], numMessages);
 		setSequenceNum(messages[i], i);
 		setCommandIndex(messages[i], commandIndex);
+		
+
+
 		int size = PAYLOAD_SIZE;
 		//only last message has a different size
 		if(i == numMessages-1 && (responseLength%PAYLOAD_SIZE != 0 || responseLength == 0))
@@ -54,6 +62,7 @@ void sendResponse(int sock, struct sockaddr_in* recipientAddr, int addressSize, 
 		int size = RESPONSE_MESSAGE_SIZE;
 		if(i == numMessages-1 && (responseLength%PAYLOAD_SIZE != 0 || responseLength == 0))
 			size = 16+responseLength%PAYLOAD_SIZE;
+		
 		int numSent = sendto(sock, messages[i], size, 0, (struct sockaddr*) recipientAddr, addressSize);
 		if(numSent < 0)
 			quit("sendto() failed in serverMessenger");

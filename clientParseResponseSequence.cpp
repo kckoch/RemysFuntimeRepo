@@ -137,7 +137,6 @@ void resizeUpTo(vector<string> &vec, int newSize)
 // Appends message to specified output stream, including null bytes
 void appendToFile(ofstream &out, const string &message)
 {
-	DEBUG("Appending to file: {" << message << "}" << endl);
 	if(out.good())
 	{
 		for(int i = 0; i < message.size(); i++)
@@ -147,7 +146,6 @@ void appendToFile(ofstream &out, const string &message)
 	}
 	else
 	{
-		DEBUG("FATAL ERROR: OUTPUT FILE NO GOOD\n");
 		exit(-1);
 	}
 }
@@ -160,7 +158,6 @@ void appendToFile(ofstream &out, const string &message)
 // If it's the second loop, add (numsides + 1) to the return value to compensate for the first loop
 int getSideNumber(int commandIndex)
 {
-	DEBUG("GETSIDENUMBER " << commandIndex << " | " << commandIndex + 4 << " | " << (commandIndex + 4) / 8 << endl);
 	if(firstLoop)
 		return ( (commandIndex + 4) / 8);
 	else
@@ -171,14 +168,12 @@ int getSideNumber(int commandIndex)
 // and print output to an appropriately-named image file
 void handleImage(const string &message, int commandIndex)
 {
-	DEBUG("HANDLEIMAGE START");
 
 	char name[15];
 	sprintf(&name[0], "image-%d.jpg", getSideNumber(commandIndex));
 
 	string imageString = decodeMessage(message);
 
-	DEBUG(" - " << name << endl);
 
 	ofstream out(name);
 	appendToFile(out, imageString);
@@ -191,7 +186,6 @@ void writePositionData(const string prepend, const string &message, int commandI
 	char name[15];
 	sprintf(&name[0], "position-%d.txt", sideNumber);
 
-	DEBUG(" - " << name << endl);
 
 	// If this is the first time writing to this position file, 
 	// clear the contents of the file
@@ -211,21 +205,18 @@ void writePositionData(const string prepend, const string &message, int commandI
 // Open an appropriately-named file, and append GPS information to it
 void handleGPS(const string &message, int commandIndex)
 {
-	DEBUG("HANDLEGPS START");
 	writePositionData("GPS ", message, commandIndex);
 }
 
 // Open an appropriately-named file, and append DGPS information to it
 void handleDGPS(const string &message, int commandIndex)
 {
-	DEBUG("HANDLEDGPS START");
 	writePositionData("DGPS ", message, commandIndex);
 }
 
 // Open an appropriately-named file, and append laser information to it
 void handleLasers(const string &message, int commandIndex)
 {
-	DEBUG("HANDLELASERS START");
 	writePositionData("LASERS ", message, commandIndex);
 }
 
@@ -257,27 +248,22 @@ void handleResponse(int commandIndex)
 	// IMAGE, GPS, DGPS, and LASERS are #define statments
 	if(commandCode == IMAGE)
 	{
-		DEBUG("HANDLING IMAGE\n");
 		handleImage(response, commandIndex);
 	}
 	else if(commandCode == GPS)
 	{
-		DEBUG("HANDLING GPS\n");
 		handleGPS(response, commandIndex);
 	}
 	else if(commandCode == DGPS)
 	{
-		DEBUG("HANDLING DGPS\n");
 		handleDGPS(response, commandIndex);
 	}
 	else if(commandCode == LASERS)
 	{
-		DEBUG("HANDLING LASERS\n");
 		handleLasers(response, commandIndex);
 	}
 	else
 	{
-		DEBUG("UNKNOWN CODE " << commandCode << " | " << commandIndex << "\n");
 	}
 	
 }

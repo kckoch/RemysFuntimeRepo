@@ -18,7 +18,6 @@
 #include <sys/time.h>
 
 #include "string"
-
 #include "serverReceiveEntireMessage.cpp"
 
 #define MAXLINE 1000
@@ -117,7 +116,7 @@ int main(int argc, char *argv[])
 		do {
 			//get current command 
 			string command = getNextCommand(received, position);
-			string sub = command.substr(0, 4);
+			string sub = command.substr(0, 5);
 			
 
 			cout << "command string: " << command << " first 4: " << sub << endl;
@@ -154,7 +153,7 @@ int main(int argc, char *argv[])
 			//Waits for robot on certain commands
 			double sleepTime; 
 			int waitSeconds, waitUSeconds;
-			if (sub == "MOVE") {
+			if (sub == "MOVE ") {
 				if (lengthOrDegrees > timeSpent) {
 					sleepTime = lengthOrDegrees - timeSpent;
 					waitSeconds = (int) sleepTime;
@@ -164,7 +163,7 @@ int main(int argc, char *argv[])
 					usleep(waitUSeconds);
 				}
 			}
-			else if (sub == "TURN") {
+			else if (sub == "TURN ") {
 				const double actualSpeed = .89*M_PI/4;
 				if(lengthOrDegrees/actualSpeed > timeSpent) {
 					sleepTime = lengthOrDegrees/actualSpeed - timeSpent;
@@ -206,9 +205,7 @@ int main(int argc, char *argv[])
 			for(j = 0; j < httpBodyLength; j++)
 				fprintf(stderr, "%c", httpBody[j]);
 			#endif
-
 			
-	
 			//Send response back to the UDP client
 			sendResponse(clientSock, &clientAddress, sizeof(clientAddress), ID, httpBody, httpBodyLength, commandIndex);
 			commandIndex = (commandIndex+1)%8+1;		

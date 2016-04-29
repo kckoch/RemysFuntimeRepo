@@ -67,7 +67,6 @@ Be careful using C++ strings. They don't like the null character, which is a val
 
 using namespace std;
 
-#define DEBUG(X) cout << "{" << __LINE__ << "} | " << X; cout.flush()
 
 const string EXAMPLESTRING =
 				"  COMPRESSION BEGINS )}>"
@@ -250,7 +249,6 @@ void trimDictionary(map<string, int> &dictionary)
 
 	for(set<pair<int, string> >::reverse_iterator it2 = filter.rbegin(); it2 != filter.rend();)
 	{
-		DEBUG(it2->first << " | " << debugString(it2->second) << endl);
 		it2++;
 	}
 
@@ -357,7 +355,6 @@ int main()
 
 map<string, int> createDictionary(string input)
 {
-	DEBUG("Creating dictionary from string of size " << input.length() << endl);
 //	DEBUG(debugString(input) << endl);
 
 
@@ -388,7 +385,6 @@ map<string, int> createDictionary(string input)
 		}
 	}
 
-	DEBUG("Dictionary.size() after = " << dictionary.size() << endl);
 
 
 //	for(map<string, int>::iterator i = dictionary.begin(); i != dictionary.end(); i++)
@@ -542,7 +538,6 @@ string encodeMessage(const string &message, map<string, int> dictionary)
 
 string decodeMessage(string message)
 {
-	DEBUG("decodeMessage START - DECODING {" << message << "}\n");
 	// Handle unfortunate case where there was no compression
 	if(message[0] == '\0')
 	{
@@ -624,7 +619,6 @@ string decodeMessage(string message)
 
 	}
 
-	DEBUG("decodeMessage : RETURNING {" << ret << "} (" << ret.size() << ")\n");
 	return ret;
 }
 

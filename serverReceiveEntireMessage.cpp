@@ -88,24 +88,7 @@ string receiveEntireMessage(int &clientSock)
 
 		printBytes(ret.c_str(), ret.length());
 
-	} //while(ret[ret.size() - 1] != '\0');
+	} //while(ret[ret.size()-1] != '\0');
 
-	cout << endl << "I SAID HEYYYY RECIEVING HOLIDAYS" << endl;
 	return ret;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
