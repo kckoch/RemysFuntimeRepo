@@ -288,7 +288,7 @@ void parseResponseSequence(int numSidesNEW, bool clockwise)
 	firstLoop = clockwise;
 	
 	// While there are unanswered commands
-	while(numCommands > 0)
+	while(numCommands > 1)
 	{
 		char *message = (char *) malloc(RESPONSE_MESSAGE_SIZE);
 
