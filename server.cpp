@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
 			free(httpResponse);
 		
 			plog("End loop to handle client request"); 
-		} while(received[position] != '\0');
+		} while(position <received.length() && received[position] != '\0');
 	}
 	//Loop for each client request
 }
