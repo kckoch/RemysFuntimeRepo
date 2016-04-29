@@ -89,8 +89,6 @@ void getGPS(char* robotAddress, char* robotID, char* requestStr)
         uint32_t requestID = getRequestID(clientBuffer);
         sendResponse(clientSock, &clientAddress, clientAddressLen, requestID, httpBody, httpBodyLength);
         
-		cout << "DAMMMMMNNNNNNN WORKED" << endl;       
- 
         free(httpResponse);
 
 }
@@ -131,12 +129,10 @@ void parseMessage(char* robotAddress, char* robotID, string &message, int &clien
 	int position = 0;
 	do
 	{
-		cout << position << " | " << (unsigned int) (char) message[position] << " | " << message[position];
 		string command = getNextCommand(message, position);
 
 		string sub = command.substr(0, 4);
 
-		cout << "command = " << command << endl << sub << endl;
 
 		// Handle our getSnapshot() requests
 		if(sub == "GET ")

@@ -96,19 +96,16 @@ int main(int argc, char *argv[])
 
 		//get number of messages
 		temp += 4;
-		unsigned int numMessages = ntohl(*(uint32_t*)temp);
+		//unsigned int numMessages = ntohl(*(uint32_t*)temp);
 		
 		//get message index
 		temp += 4;
-		unsigned int mesIndex = ntohl(*(uint32_t*)temp);
+		//unsigned int mesIndex = ntohl(*(uint32_t*)temp);
 	
 		//get RobotID
 		temp+=4;
 		char *RobotIDstr = new char[988];
 		strcpy(RobotIDstr, temp);
-		int robotPort = atoi(RobotIDstr);	
-
-		cout << "ID: " << ID << " numMessages: " << numMessages << " mesIndex: " << mesIndex << " RobID: " << robotPort << endl;
 
 		int position = strlen(RobotIDstr)+13; 
 		int commandIndex = 0;
@@ -118,11 +115,8 @@ int main(int argc, char *argv[])
 			string sub = command.substr(0, 5);
 			
 
-			cout << "command string: " << command << " first 4: " << sub << endl;
 			char* robotPort = getRobotPortForRequestStr(command.c_str());
 			
-			cout << "robotPort: " << robotPort << endl;
-
 			//Send HTTP request to robot
 			int robotSock;
 			if((robotSock = setupClientSocket(robotAddress, robotPort, SOCKET_TYPE_TCP)) < 0) {
@@ -133,11 +127,8 @@ int main(int argc, char *argv[])
 			
 			double lengthOrDegrees = 0; //needed to wait proper time 
 			char* httpRequest = generateHTTPRequest(robotAddress, robotID, &command[0u], imageID, lengthOrDegrees);
-			cout << endl << "Testing proper gen " << lengthOrDegrees << endl;
 
 
-			cout << "Created http request: " << httpRequest;
-			
 			double timeSpent = getTime();
 			if(write(robotSock, httpRequest, strlen(httpRequest)) != strlen(httpRequest)) {
 				quit("could not send http request to robot - write() failed");
@@ -198,7 +189,6 @@ int main(int argc, char *argv[])
 			char* httpBody = strstr(httpResponse, "\r\n\r\n")+4;
 			int httpBodyLength = (httpResponse+pos)-httpBody;
 			
-			cout << "http body of bytes" << httpBodyLength;
 			plog("http body: ");
 			#ifdef DEBUG
 			for(j = 0; j < httpBodyLength; j++)
@@ -247,7 +237,6 @@ char* generateHTTPRequest(char* robotAddress, char* robotID, char* requestStr, c
 	char* URI = (char *) malloc(MAXLINE);
 	memset(URI, 0, MAXLINE);
 	double x;
-	printf("%s", requestStr);
 	if(sscanf(requestStr, "MOVE %lf %lf", &x, &lengthOrDegrees) == 2) {
 		sprintf(URI, "/twist?id=%s&lx=%lf", robotID, x);
 	}
@@ -293,7 +282,6 @@ char* generateHTTPRequest(char* robotAddress, char* robotID, char* requestStr, c
 	strcat(httpRequest, "\r\n");
 
 	free(URI);
-	printf("httpreq %s\n", httpRequest);
 	fflush(stdout);
 	return httpRequest;
 }

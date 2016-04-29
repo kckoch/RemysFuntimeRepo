@@ -35,15 +35,6 @@ void flushBuffersAndExit(int x);
 
 struct sockaddr_in clientAddress;
 
-void printBytes(const char* string, int bytes) {
-    int i;
-    for (i = 0; i < bytes; i++) {
-        if (!(i % 8)) printf("\n");
-        printf("%.2X ", *(string + i) & 0xff);
-    }
-}
-
-
 // Appends the specied string to message, including null bytes
 void addToString(string &message, string &add)
 {
@@ -72,11 +63,6 @@ string receiveEntireMessage(int &clientSock)
 				(struct sockaddr *) &clientAddress, &clientAddressLen)) < 0) {
 			quit("could not receive client request - recvfrom() failed");
 		}
-		cout << endl << recvMsgSize << endl;
-	
-		printBytes(clientBuffer, recvMsgSize);
-
-		cout << endl << endl << endl;
 
 		ret.reserve(ret.size() + recvMsgSize);
 
@@ -85,8 +71,6 @@ string receiveEntireMessage(int &clientSock)
 		{
 			ret += clientBuffer[i];
 		}
-
-		printBytes(ret.c_str(), ret.length());
 
 	} //while(ret[ret.size()-1] != '\0');
 

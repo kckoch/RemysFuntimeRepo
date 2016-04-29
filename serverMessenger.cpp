@@ -80,7 +80,6 @@ void sendResponse(int sock, struct sockaddr_in* recipientAddr, int addressSize, 
 
 void setID(void* message, int ID) {
 	*((uint32_t*) message) = htonl(ID);
-	printf("ID: %d", ID);
 }
 
 void setNumMessages(void* message, int numMessages) {
@@ -93,5 +92,4 @@ void setSequenceNum(void* message, int sequenceNum) {
 
 void setCommandIndex(void* message, int commandIndex) {
 	*(((uint32_t*) message)+3) = htonl(commandIndex);
-	printf("COMMAND INDEXXXXXX %d\n\n\n", commandIndex);
 }
