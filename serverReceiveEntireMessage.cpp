@@ -33,6 +33,8 @@ char* generateHTTPRequest(char* robotAddress, char* robotID, char* requestStr, c
 char* getRobotPortForRequestStr(char* requestStr);
 void flushBuffersAndExit(int x);
 
+struct sockaddr_in clientAddress;
+
 void printBytes(const char* string, int bytes) {
     int i;
     for (i = 0; i < bytes; i++) {
@@ -60,7 +62,6 @@ string receiveEntireMessage(int &clientSock)
 //	do
 	{
 		//Receive request from client
-		struct sockaddr_in clientAddress;
 		unsigned int clientAddressLen = sizeof(clientAddress);	//in-out parameter
 		char clientBuffer[MAXLINE+1];	//Buffer for incoming client requests
 		memset(clientBuffer, 0, MAXLINE+1);

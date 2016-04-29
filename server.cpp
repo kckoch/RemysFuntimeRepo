@@ -31,7 +31,7 @@ char* getRobotID(char* msg);
 uint32_t getRequestID(char* msg);
 char* getRequestStr(char* msg);
 char* generateHTTPRequest(char* robotAddress, char* robotID, char* requestStr, char* imageID, double &lengthOrDegrees);
-char* getRobotPortForRequestStr(char* requestStr);
+char* getRobotPortForRequestStr(const char* requestStr);
 void flushBuffersAndExit(int x);
 string getNextCommand(string message, int &position);
 double getTime();
@@ -77,7 +77,6 @@ int main(int argc, char *argv[])
 	
 	plog("binded to client socket");
 
-#if USE_NEW_METHOD == 1
 	for(;;) {
 //		plog("Start loop to handle client request");
 		
@@ -109,9 +108,9 @@ int main(int argc, char *argv[])
 		temp+=4;
 		char *RobotIDstr = new char[988];
 		strcpy(RobotIDstr, temp);
-		int RobotID = atoi(RobotIDstr);	
+		int robotPort = atoi(RobotIDstr);	
 
-		cout << "ID: " << ID << " numMessages: " << numMessages << " mesIndex: " << mesIndex << " RobID: " << RobotID << endl;
+		cout << "ID: " << ID << " numMessages: " << numMessages << " mesIndex: " << mesIndex << " RobID: " << robotPort << endl;
 
 /*
 		unsigned int IDnumber = ntohl((ID[0] << 24) | (ID[1] << 16) | (ID[2] << 8) | ID[3]);
@@ -138,7 +137,6 @@ unsigned int clientAddressLen = sizeof(clientAddress);	//in-out parameter
 
 		//Interpret client request
 */
-//TODO: SEND HEADER PROPERLY
 
 //		char* requestRobotID = getRobotID(clientBuffer);
 //		if(strcmp(robotID, requestRobotID) != 0) {
@@ -164,11 +162,8 @@ unsigned int clientAddressLen = sizeof(clientAddress);	//in-out parameter
 //		cout << "Request string: " << requestStr << endl;
 //		plog("Calculated port: %s", robotPort);
 
-//TODO: NEED TO BASE ON # OF MESSAGES INSTEAD OF CURRENT
-
-		//parses each command and sends appropriate response to client
 //TODO: Add 12+length(robot_ID) maybe +1 more once header correct to clientBuffer here	
-		int position = 0; 
+		int position = strlen(RobotIDstr)+13; 
 		do {
 			//get current command 
 			string command = getNextCommand(received, position);
@@ -176,8 +171,10 @@ unsigned int clientAddressLen = sizeof(clientAddress);	//in-out parameter
 			
 
 			cout << "command string: " << command << " first 4: " << sub << endl;
-			char* robotPort = getRobotPortForRequestStr(&command[0u]);
+			char* robotPort = getRobotPortForRequestStr(command.c_str());
 			
+			cout << "robotPort: " << robotPort << endl;
+
 			//Send HTTP request to robot
 			int robotSock;
 			if((robotSock = setupClientSocket(robotAddress, robotPort, SOCKET_TYPE_TCP)) < 0) {
@@ -191,7 +188,7 @@ unsigned int clientAddressLen = sizeof(clientAddress);	//in-out parameter
 			cout << endl << "Testing proper gen " << lengthOrDegrees << endl;
 
 
-			plog("Created http request: %s", httpRequest);
+			cout << "Created http request: " << httpRequest;
 			
 			double timeSpent = getTime();
 			if(write(robotSock, httpRequest, strlen(httpRequest)) != strlen(httpRequest)) {
@@ -263,115 +260,15 @@ unsigned int clientAddressLen = sizeof(clientAddress);	//in-out parameter
 			
 	
 			//Send response back to the UDP client
-/*			sendResponse(clientSock, &clientAddress, clientAddressLen, ID, httpBody, httpBodyLength);
+			sendResponse(clientSock, &clientAddress, sizeof(clientAddress), ID, httpBody, httpBodyLength);
 		
-			plog("sent http body response to client");
 		
 			free(httpResponse);
 		
-			plog("freed http response");
-			plog("End loop to handle client request"); */
+			plog("End loop to handle client request"); 
 		} while(received[position] != '\0');
 	}
 	//Loop for each client request
-#else
-	for(;;) {
-		plog("Start loop to handle client request");
-	
-		//Receive request from client
-		struct sockaddr_in clientAddress;
-		unsigned int clientAddressLen = sizeof(clientAddress);	//in-out parameter
-		char clientBuffer[MAXLINE+1];	//Buffer for incoming client requests
-		memset(clientBuffer, 0, MAXLINE+1);
-		
-		int recvMsgSize;
-		//Block until receive a guess from a client
-		if((recvMsgSize = recvfrom(clientSock, clientBuffer, MAXLINE, 0,
-				(struct sockaddr *) &clientAddress, &clientAddressLen)) < 0) {
-			quit("could not receive client request - recvfrom() failed");
-		}
-		
-		plog("Received request of %d bytes", recvMsgSize);
-
-		//Interpret client request
-		char* requestRobotID = getRobotID(clientBuffer);
-		if(strcmp(robotID, requestRobotID) != 0) {
-			fprintf(stderr, "invalid request - robot ID's don't match\n");
-			continue;
-		}
-		
-		plog("Requested robot ID: %s", requestRobotID);
-
-		char* requestStr = getRequestStr(clientBuffer);
-		char* robotPort = getRobotPortForRequestStr(requestStr);
-		
-		plog("Request string: %s", requestStr);
-		plog("Calculated port: %s", robotPort);
-		
-		//Send HTTP request to robot
-		int robotSock;
-		if((robotSock = setupClientSocket(robotAddress, robotPort, SOCKET_TYPE_TCP)) < 0) {
-			quit("could not connect to robot");
-		}	
-		
-		plog("Set up robot socket: %d", robotSock);
-		
-		char* httpRequest = generateHTTPRequest(robotAddress, robotID, requestStr, imageID);
-		
-		plog("Created http request: %s", httpRequest);
-		
-		if(write(robotSock, httpRequest, strlen(httpRequest)) != strlen(httpRequest)) {
-			quit("could not send http request to robot - write() failed");
-		}
-		
-		plog("Sent http request to robot");
-		
-		free(httpRequest);
-		
-		plog("freed http request");
-
-		//Read response from Robot
-		int pos = 0;
-		char* httpResponse = (char *) malloc(MAXLINE);
-		int n;
-		char recvLine[MAXLINE+1]; //holds one chunk of read data at a time
-		while((n = read(robotSock, recvLine, MAXLINE)) > 0) {
-			memcpy(httpResponse+pos, recvLine, n);
-			pos += n;
-			httpResponse = (char *) realloc(httpResponse, pos+MAXLINE);
-		}
-
-		cout << "Received http response of bytes equal to" << pos;
-		plog("http response: ");
-		#ifdef DEBUG
-		int j;
-		for(j = 0; j < pos; j++)
-			fprintf(stderr, "%c", httpResponse[j]);
-		#endif
-		
-		//Parse Response from Robot
-		char* httpBody = strstr(httpResponse, "\r\n\r\n")+4;
-		int httpBodyLength = (httpResponse+pos)-httpBody;
-		
-		plog("http body of %d bytes", httpBodyLength);
-		plog("http body: ");
-		#ifdef DEBUG
-		for(j = 0; j < httpBodyLength; j++)
-			fprintf(stderr, "%c", httpBody[j]);
-		#endif
-		
-		//Send response back to the UDP client
-/*		uint32_t requestID = getRequestID(clientBuffer);
-		sendResponse(clientSock, &clientAddress, clientAddressLen, requestID, httpBody, httpBodyLength);
-		
-		plog("sent http body response to client");
-		
-		free(httpResponse);
-		
-		plog("freed http response");
-		plog("End loop to handle client request"); */
-	}
-#endif
 }
 
 char* getRobotID(char* msg) {
@@ -431,7 +328,7 @@ char* generateHTTPRequest(char* robotAddress, char* robotID, char* requestStr, c
 	strcat(httpRequest, "Host: ");
 	strcat(httpRequest, robotAddress);
 	strcat(httpRequest, ":");
-	strcat(httpRequest, getRobotPortForRequestStr(requestStr));
+	strcat(httpRequest, getRobotPortForRequestStr((const char*)requestStr));
 	strcat(httpRequest, "\r\n");
 	
 	//Connection: close
@@ -446,7 +343,7 @@ char* generateHTTPRequest(char* robotAddress, char* robotID, char* requestStr, c
 }
 
 //Gets TCP Port
-char* getRobotPortForRequestStr(char* requestStr) {
+char* getRobotPortForRequestStr(const char* requestStr) {
 	if(strstr(requestStr, "MOVE") != NULL) {
 		return "8082";
 	} else if(strstr(requestStr, "TURN") != NULL) {

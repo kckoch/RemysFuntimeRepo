@@ -2,7 +2,7 @@
 #define POLY_UTILITY_H
 
 #include <stdarg.h>
-
+#include <stdint.h>
 //#define DEBUG
 
 void _quit(const char *fmt, ...)

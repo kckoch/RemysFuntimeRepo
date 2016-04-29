@@ -75,7 +75,7 @@ void addToString(string &str, const char *add, int size)
 	Return pointer to response data
 */
 
-static uint32_t ID = 2851;
+static uint32_t ID = 0;
 
 // Algorithm and supporting functions written by TJ Wills
 void sendRequestNoResponse(char* requestString /*, int* responseLength, double timeout */) {

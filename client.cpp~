@@ -21,6 +21,7 @@
 
 using namespace std;
 
+
 void tracePolygon(int numSides, bool clockwise);
 void getSnapshot();
 double getTime();
@@ -98,7 +99,7 @@ void sendCommandSequence(int numSides, int clockwise, int length)
 	}
 	
 	buffer += '\0'; // Null-terminate the data
-	DEBUG2("client.c buffer = %s\n", buffer.c_str());
+//	DEBUG2("client.c buffer = %s\n", buffer.c_str());
 
 	free(turnRequest);
 	free(moveRequest);
@@ -286,7 +287,10 @@ int main(int argc, char** argv) {
 	if(N < 4 || N > 8) {
 		quit("N must be an integer the range [4, 8]");
 	}
-	
+	srand(time(NULL));
+	ID = rand();
+
+		
 	plog("Read arguments");
 	plog("Server host: %s", serverHost);
 	plog("Server port: %s", serverPort);

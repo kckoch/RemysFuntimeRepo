@@ -10,6 +10,8 @@
 #include <unistd.h>     //for close()
 #include <netdb.h>		//for struct sockaddr*
 
+using namespace std;
+
 const int RESPONSE_MESSAGE_SIZE = 1000;
 
 void setID(void* message, int ID);
@@ -67,6 +69,7 @@ void sendResponse(int sock, struct sockaddr_in* recipientAddr, int addressSize, 
 
 void setID(void* message, int ID) {
 	*((uint32_t*) message) = htonl(ID);
+	printf("ID: %d", ID);
 }
 
 void setNumMessages(void* message, int numMessages) {

@@ -341,6 +341,7 @@ void parseResponseSequence(int numSidesNEW, bool clockwise)
 
 		if(extractMessageID((void *) message) != ID)
 		{
+			printf("Recieved ID %d | Normal ID %d\n", extractMessageID((void*)message), ID);
 			quit("Improper message ID");
 			DEBUG3("%i | %i\n", extractMessageID((void *) message), ID);
 			exit(-1);
@@ -455,7 +456,7 @@ void parseResponseSequenceTest(int numCommands)
 
 // Second iteration - only useful if testing example1 with example 2
 ////////////////////
-/*
+
 	message = (char *) malloc(RESPONSE_MESSAGE_SIZE);
 	
 	// Simulate receiving example

@@ -21,6 +21,7 @@
 
 using namespace std;
 
+
 void tracePolygon(int numSides, bool clockwise);
 void getSnapshot();
 double getTime();
@@ -286,7 +287,7 @@ int main(int argc, char** argv) {
 	if(N < 4 || N > 8) {
 		quit("N must be an integer the range [4, 8]");
 	}
-	
+		
 	plog("Read arguments");
 	plog("Server host: %s", serverHost);
 	plog("Server port: %s", serverPort);
