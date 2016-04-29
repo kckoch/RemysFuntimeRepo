@@ -164,7 +164,7 @@ unsigned int clientAddressLen = sizeof(clientAddress);	//in-out parameter
 
 //TODO: Add 12+length(robot_ID) maybe +1 more once header correct to clientBuffer here	
 		int position = strlen(RobotIDstr)+13; 
-		int commandIndex = 0;
+		int commandIndex = 1;
 		do {
 			//get current command 
 			string command = getNextCommand(received, position);
@@ -207,7 +207,6 @@ unsigned int clientAddressLen = sizeof(clientAddress);	//in-out parameter
 			int waitSeconds, waitUSeconds;
 			if (sub == "MOVE") {
 				if (lengthOrDegrees > timeSpent) {
-					commandIndex = 0;
 					sleepTime = lengthOrDegrees - timeSpent;
 					waitSeconds = (int) sleepTime;
 					sleepTime -= waitSeconds;
@@ -263,7 +262,7 @@ unsigned int clientAddressLen = sizeof(clientAddress);	//in-out parameter
 	
 			//Send response back to the UDP client
 			sendResponse(clientSock, &clientAddress, sizeof(clientAddress), ID, httpBody, httpBodyLength, commandIndex);
-			commandIndex++;		
+			commandIndex = (commandIndex+1)%8+1;		
 		
 			free(httpResponse);
 		

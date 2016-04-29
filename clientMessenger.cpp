@@ -306,7 +306,7 @@ void* sendRequest(char* requestString, int* responseLength, double timeout) {
 	
 	//stop timer
 	stopTimer();
-	
+//TODO: check 16 vs 12
 	int PAYLOAD_SIZE = RESPONSE_MESSAGE_SIZE - 16;
 	*responseLength = (numMessages-1)*PAYLOAD_SIZE + (lastMessageLength-16);
 	void* fullResponse = malloc(*responseLength);
