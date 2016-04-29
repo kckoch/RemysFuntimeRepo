@@ -259,8 +259,8 @@ void handleLasers(const string &message, int commandIndex)
 void handleResponse(int commandIndex)
 {
 	const string response = extractMessage(responses[commandIndex]);
-
-	// Requests sent always take the following order:
+	cout << "342" << endl;	
+// Requests sent always take the following order:
 	//
 	// * First 4 requests:
 	// [image][gps][dgps][lasers
@@ -338,7 +338,6 @@ void parseResponseSequence(int numSidesNEW, bool clockwise)
 		if(len <= 0)
 			quit("server doesn't exist or recv() failed");
 	
-
 		if(extractMessageID((void *) message) != ID)
 		{
 			printf("Recieved ID %d | Normal ID %d\n", extractMessageID((void*)message), ID);
@@ -351,7 +350,7 @@ void parseResponseSequence(int numSidesNEW, bool clockwise)
 		// has room to hold the cluster of responses for it
 		int commandIndex = extractCommandIndex((void *) message);
 		resizeUpTo(responses, commandIndex + 1);
-
+		printf("HEEYYYYYY\n\n\n");
 		// Extract the number of messages to be sent for this command index, and
 		// ensure the appropriate vector has enough room to hold these responses
 		int numberMessages = extractNumMessages((void *) message);

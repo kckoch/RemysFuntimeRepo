@@ -307,15 +307,15 @@ void* sendRequest(char* requestString, int* responseLength, double timeout) {
 	//stop timer
 	stopTimer();
 	
-	int PAYLOAD_SIZE = RESPONSE_MESSAGE_SIZE - 12;
-	*responseLength = (numMessages-1)*PAYLOAD_SIZE + (lastMessageLength-12);
+	int PAYLOAD_SIZE = RESPONSE_MESSAGE_SIZE - 16;
+	*responseLength = (numMessages-1)*PAYLOAD_SIZE + (lastMessageLength-16);
 	void* fullResponse = malloc(*responseLength);
 	for(i = 0; i < numMessages-1; i++) {
-		memcpy(((char*)fullResponse)+i*PAYLOAD_SIZE, ((char*)messages[i])+12, PAYLOAD_SIZE);
+		memcpy(((char*)fullResponse)+i*PAYLOAD_SIZE, ((char*)messages[i])+16, PAYLOAD_SIZE);
 		free(messages[i]);
 	}
 	//copy last message data
-	memcpy(((char*)fullResponse)+(numMessages-1)*PAYLOAD_SIZE, ((char*)messages[numMessages-1])+12, lastMessageLength-12);
+	memcpy(((char*)fullResponse)+(numMessages-1)*PAYLOAD_SIZE, ((char*)messages[numMessages-1])+16, lastMessageLength-16);
 	free(messages[numMessages-1]);
 
 	//update ID for next call
@@ -376,7 +376,7 @@ void* recvMessage(int ID, int* messageLength) {
 		int len = recv(sock, message, RESPONSE_MESSAGE_SIZE, 0);
 		if(len <= 0)
 			quit("recvMessage - server doesn't exist or recv() failed");
-		if(len < 12)
+		if(len < 16)
 			quit("improper server response message -- doesn't include required headers");
 		
 		//accept message if it matches request ID

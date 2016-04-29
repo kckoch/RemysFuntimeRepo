@@ -1,7 +1,7 @@
 CC = gcc
 GG = g++
 CFLAGS = -Wall
-PROGS =	robotClient robotServer dummyServer
+PROGS =	robotClient robotServer
 DEPS = utility.h utility.cpp Makefile setupClientSocket.inc
 SUPRESS = -Wno-write-strings -Wno-sign-compare
 
@@ -12,9 +12,6 @@ robotClient: client.cpp clientMessenger.h clientMessenger.cpp $(DEPS)
 
 robotServer: server.cpp serverMessenger.h serverMessenger.cpp $(DEPS)
 	${GG} -o $@ -g ${SUPRESS} server.cpp serverMessenger.cpp utility.cpp ${CFLAGS}
-
-dummyServer: dummyServer.cpp serverMessenger.h serverMessenger.cpp $(DEPS)
-	${GG} -o $@ ${SUPRESS} dummyServer.cpp serverMessenger.cpp utility.cpp ${CFLAGS}
 
 clean:
 	rm -f ${PROGS} position* *.jpg
