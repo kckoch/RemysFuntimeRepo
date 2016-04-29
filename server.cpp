@@ -112,59 +112,8 @@ int main(int argc, char *argv[])
 
 		cout << "ID: " << ID << " numMessages: " << numMessages << " mesIndex: " << mesIndex << " RobID: " << robotPort << endl;
 
-/*
-		unsigned int IDnumber = ntohl((ID[0] << 24) | (ID[1] << 16) | (ID[2] << 8) | ID[3]);
-		cout << "IDNUMBER: " << IDnumber << endl; 
-	
-		strncpy(ID, &received[4], 4);
-		IDnumber = ntohl((ID[0] << 24) | (ID[1] << 16) | (ID[2] << 8) | ID[3]);
-        cout << "IDNUMBER: " << IDnumber << endl;
-*/	
-/*		//Receive request from client
-		struct sockaddr_in clientAddress;
-unsigned int clientAddressLen = sizeof(clientAddress);	//in-out parameter
-		char clientBuffer[MAXLINE+1];	//Buffer for incoming client requests
-		memset(clientBuffer, 0, MAXLINE+1);
-		
-		int recvMsgSize;
-		//Block until receive a guess from a client
-		if((recvMsgSize = recvfrom(clientSock, clientBuffer, MAXLINE, 0,
-				(struct sockaddr *) &clientAddress, &clientAddressLen)) < 0) {
-			quit("could not receive client request - recvfrom() failed");
-		}
-		
-		cout << "Received request of bytes equal to " << recvMsgSize << endl;
-
-		//Interpret client request
-*/
-
-//		char* requestRobotID = getRobotID(clientBuffer);
-//		if(strcmp(robotID, requestRobotID) != 0) {
-//			fprintf(stderr, "invalid request - robot ID's don't match\n");
-//			exit(1);
-//		}
-
-//		plog("Requested robot ID: %s", requestRobotID);
-
-
-		//char* requestStr = getRequestStr(clientBuffer);
-		//char* robotPort = getRobotPortForRequestStr(requestStr);
-		
-		
-//		unsigned int numberOfMessages = (unsigned int) clientBuffer[4];
-//		unsigned int messageIndex = (unsigned int) clientBuffer[8];
-
-//		cout << "First command length " << clientBuffer[12] << endl;
-
-
-	
-//		cout << clientBuffer << endl;	
-//		cout << "Request string: " << requestStr << endl;
-//		plog("Calculated port: %s", robotPort);
-
-//TODO: Add 12+length(robot_ID) maybe +1 more once header correct to clientBuffer here	
 		int position = strlen(RobotIDstr)+13; 
-		int commandIndex = 1;
+		int commandIndex = 0;
 		do {
 			//get current command 
 			string command = getNextCommand(received, position);
@@ -375,18 +324,9 @@ string getNextCommand(string message, int &position)
 {
     int commandLength = (int) (unsigned char) message[position];
 
-//  int end = ++position + commandLength;
 	string ret = message.substr(++position, commandLength);
     position += commandLength;
-/*
-    ret.reserve(commandLength + 1);
 
-    while(position != end)
-    {
-        ret += message[position++];
-    }
-    ret += '\0';
-*/
 
     return ret;
 }

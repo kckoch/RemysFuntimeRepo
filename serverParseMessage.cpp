@@ -42,15 +42,7 @@ string getNextCommand(string &message, int &position)
 
 	string ret = message.substr(++position, commandLength);
 	position += commandLength;
-/*
-	ret.reserve(commandLength + 1);
 
-	while(position != end)
-	{
-		ret += message[position++];
-	}
-	ret += '\0';
-*/
 
 	return ret;
 }
@@ -226,7 +218,6 @@ void parseMessage(char* robotAddress, char* robotID, string &message, int &clien
 
 				turn(velocity, degrees);
 
-//				DEBUG("Velocity = " << velocity << ", degrees = " << degrees << endl);
 				
 			}
 			else
