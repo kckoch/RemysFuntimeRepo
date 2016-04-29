@@ -32,6 +32,10 @@ KNOWN PROBLEMS:
    coursework), the option was eventually ruled out. Doing so would further increase 
    throughput by allowing the server to do things while waiting for the robot to move.
 
+   Significantly large polygons may have more than one message for a single side needed,
+   and that portion of the header was not implemented. Expect the program to crash on large
+   values of L and N.
+
 IMPROVEMENTS:
 	Implemented a compression algorithm to reduce bytes transfered from images. 
 	The compression algorithm is explained in detail in Compression.cpp.
