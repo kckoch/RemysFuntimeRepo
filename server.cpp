@@ -86,8 +86,6 @@ int main(int argc, char *argv[])
 		string received = receiveEntireMessage(clientSock);
 //		string received = "\14MOVE 1.2 3.4\4STOP\11GET IMAGE\7GET GPS\10GET DGPS\12GET LASERS\14TURN 1.2 3.4\4STOP\10not real";
 		received += '\0';
-		printBytes(received.c_str(), received.length());		
-		cout << endl << received << endl;
 
 		char const *temp = received.c_str();		
 	

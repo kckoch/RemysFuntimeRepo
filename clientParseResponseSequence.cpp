@@ -223,7 +223,6 @@ void handleLasers(const string &message, int commandIndex)
 void handleResponse(int commandIndex)
 {
 	const string response = extractMessage(responses[commandIndex]);
-	cout << "342" << endl;	
 // Requests sent always take the following order:
 	//
 	// * First 4 requests:
@@ -309,7 +308,6 @@ void parseResponseSequence(int numSidesNEW, bool clockwise)
 		// has room to hold the cluster of responses for it
 		int commandIndex = extractCommandIndex((void *) message);
 		resizeUpTo(responses, commandIndex + 1);
-		printf("HEEYYYYYY ->>>> %d \n\n\n", commandIndex);
 		// Extract the number of messages to be sent for this command index, and
 		// ensure the appropriate vector has enough room to hold these responses
 		int numberMessages = extractNumMessages((void *) message);

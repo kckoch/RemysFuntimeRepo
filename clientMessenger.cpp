@@ -137,8 +137,6 @@ void sendRequestNoResponse(char* requestString /*, int* responseLength, double t
 	
 		//send request
 		numBytesSent = send(sock, request.c_str(), packetLen, 0);
-		printf("\nsent::\n");
-		printBytes(request.c_str(), numBytesSent);
 		if(numBytesSent < 0)
 			quit("could not send request - send() failed");
 		else if(numBytesSent != packetLen)
@@ -312,12 +310,4 @@ void* recvMessage(int ID, int* messageLength) {
 		}
 		plog("Received invalid response");
 	}
-}
-
-void printBytes(const char* string, int bytes) {
-    int i;
-    for (i = 0; i < bytes; i++) {
-        if (!(i % 8)) printf("\n");
-        printf("%.2X ", *(string + i) & 0xff);
-    }
 }
