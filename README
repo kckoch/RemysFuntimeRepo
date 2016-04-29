@@ -18,9 +18,8 @@ Server: ./robotServer <Server Port> <Robot IP/hostname> <Robot ID> <Image ID>
 KNOWN PROBLEMS:
    Due to the inherent latency when writing programs that communicate over the 
    internet, the shapes that are made by our robot when the program is run are 
-   not 100% precise. In addition, the server tends to crash after a single client 
-   finishes talking to it instead of staying open. The server also deals more heavily
-   in the planning and exchange of client data, causing it to struggle with multiple
+   not 100% precise. In addition, the server also deals more heavily in the
+   planning and exchange of client data, causing it to struggle with multiple
    clients at the same time.
 
    One additional change was the lack of a random generator for the ID. The groups 
@@ -31,10 +30,6 @@ KNOWN PROBLEMS:
    constraints (as well as the group lacking in students who had taken supporting
    coursework), the option was eventually ruled out. Doing so would further increase 
    throughput by allowing the server to do things while waiting for the robot to move.
-
-   Significantly large polygons may have more than one message for a single side needed,
-   and that portion of the header was not implemented. Expect the program to crash on large
-   values of L and N.
 
 IMPROVEMENTS:
 	Implemented a compression algorithm to reduce bytes transfered from images. 
