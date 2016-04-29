@@ -1,8 +1,10 @@
-Names:  Brett George   C43712041
-        Sarah Malick   C48223658
-		  Caleb Priester C96106650
+Names:  Dalton Randall
+		Andrew Criminski
+		Thomas Wills
+		Kyra Koch
+
 Asg:    Final Project
-Date:   24 April 2015
+Date:   29 April 2015
 
 HOW TO RUN:
 Client: ./robotClient <Server IP/hostname> <Server Port> <Robot ID> <L> <N>
@@ -12,10 +14,35 @@ Server: ./robotServer <Server Port> <Robot IP/hostname> <Robot ID> <Image ID>
 KNOWN PROBLEMS:
    Due to the inherent latency when writing programs that communicate over the 
    internet, the shapes that are made by our robot when the program is run are 
-   not 100% precise.
+   not 100% precise. In addition, the server tends to crash after a single client 
+   finishes talking to it instead of staying open. The server also deals more heavily
+   in the planning and exchange of client data, causing it to struggle with multiple
+   clients at the same time.
 
+   One additional change was the lack of a random generator for the ID. The groups 
+   collectively decided to get rid of the random generated ID to ensure all code worked
+   together properly.
 
-DESIGN:
+   Threading was discussed as a possible option; however, due to illnesses and time 
+   constraints (as well as the group lacking in students who had taken supporting
+   coursework), the option was eventually ruled out. Doing so would further increase 
+   throughput by allowing the server to do things while waiting for the robot to move.
+
+IMPROVEMENTS:
+	Implemented a compression algorithm to reduce bytes transfered from images. 
+	The compression algorithm is explained in detail in Compression.cpp.
+	
+	Created an extended protocol to allow faster client to server communication. This
+	was done by extending the header with additional bytes to allow the client to communicate 
+	with the server all in one go. As a consequence, the server instead managed the 
+	delays with MOVE and TURN, causing additional bytes to be needed for those two commands;
+	however, the server's ability to simply get all of the client's data allows for an 
+	incredibly fast transfer rate and much higher throughput from the client's perspective. 
+	Furthermore, it allowed the server to only have to send the client information instead
+    of the client constantly sending the server small packages, instead sending large chunks 
+    of data. This is further explained in CLIENTCOMMANDPROTOCOL.docx.
+
+ORIGINAL DESIGN:
    For a full description of the protocol implemented for communication between our
    client, the middleware, and the robot, see the attached PROTOCOLREADME.pdf.
 
