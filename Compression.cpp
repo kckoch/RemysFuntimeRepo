@@ -623,7 +623,7 @@ string decodeMessage(string message)
 }
 
 /* These two work - C Implementations */
-char *encodeMessage(const char *message, int count, int *messageSize)
+char *encodeMessage(char const *message, int count, int *messageSize)
 {
 	string messageString;
 	messageString.resize(count);

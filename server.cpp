@@ -1,5 +1,6 @@
 #include "serverMessenger.h"
 #include "utility.h"
+#include "Compression.h"
 #include "setupClientSocket.inc"
 
 #include <stdio.h>
@@ -206,9 +207,19 @@ int main(int argc, char *argv[])
 				fprintf(stderr, "%c", httpBody[j]);
 			#endif
 			
+
+			//encodes images
+			char *encoMes;
+			if(sub == "GET I") {
+				int *newSize = (int*)malloc(sizeof(int));
+				encoMes = encodeMessage((const char *)httpBody, httpBodyLength, newSize);
+				httpBody = encoMes;
+				httpBodyLength = *newSize;
+			}	
+
 			//Send response back to the UDP client
 			sendResponse(clientSock, &clientAddress, sizeof(clientAddress), ID, httpBody, httpBodyLength, commandIndex);
-			commandIndex = (commandIndex+1)%8+1;		
+			commandIndex = (commandIndex+1);		
 		
 			free(httpResponse);
 		

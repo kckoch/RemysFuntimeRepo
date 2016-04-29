@@ -9,6 +9,7 @@
 #define COMPRESSION_H_
 
 #include <map>
+#include <string> 
 
 using namespace std;
 
@@ -16,8 +17,8 @@ string encodeMessage(const string &message, map<string, int> dictionary);
 string decodeMessage(string message);
 
 // C implementations - count = length of *message
-char *encodeMessage(const char *message, int count, int *messageSize);
-char *decodeMessage(const char *message, int count, int *messageSize);
+char *encodeMessage(char const *message, int count, int *messageSize);
+char *decodeMessage(char const *message, int count, int *messageSize);
 
 
 

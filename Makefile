@@ -11,7 +11,7 @@ robotClient: client.cpp clientMessenger.h clientMessenger.cpp $(DEPS)
 	${GG} -o $@ -g ${SUPRESS} client.cpp clientMessenger.cpp utility.cpp ${CFLAGS}
 
 robotServer: server.cpp serverMessenger.h serverMessenger.cpp $(DEPS)
-	${GG} -o $@ -g ${SUPRESS} server.cpp serverMessenger.cpp utility.cpp ${CFLAGS}
+	${GG} -o $@ -g ${SUPRESS} server.cpp serverMessenger.cpp utility.cpp Compression.cpp ${CFLAGS}
 
 clean:
 	rm -f ${PROGS} position* *.jpg
